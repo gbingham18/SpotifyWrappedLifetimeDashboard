@@ -5,11 +5,16 @@ Rails.application.routes.draw do
 
   resources :imports do
     member do
-      get :status   # ✅ Add this line to enable `/imports/:id/status`
+      get :status
     end
 
     resource :summary, only: [ :show ] do
       get :bar_chart_race
+      get :heatmap_data
+    end
+
+    resource :search, only: [] do
+      get :entity_names
     end
   end
 

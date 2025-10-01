@@ -1,4 +1,5 @@
 # typed: false
+
 # Be sure to restart your server when you modify this file.
 
 # Version of your assets, change this if you want to expire all your assets.
@@ -44,3 +45,4 @@ Rails.application.config.assets.precompile += %w[ d3-zoom.js ]
 Rails.application.config.assets.precompile += %w[ delaunator.js ]
 Rails.application.config.assets.precompile += %w[ internmap.js ]
 Rails.application.config.assets.precompile += %w[ robust-predicates.js ]
+Rails.application.config.assets.precompile += %w[ controllers/heatmap_controller.js ]

@@ -95,5 +95,49 @@
         <%= javascript_include_tag "bar_chart", type: "module" %>
       </div>
     </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header">
+        <span class="chevron">&#9656;</span>
+          🎧 Listening Intensity Heatmap
+      </button>
+      <div class="accordion-content" style="display: none;">
+        <div class="accordion-body">
+
+          <div data-controller="heatmap"
+              data-heatmap-import-id-value="<%= @import.id %>"
+              data-heatmap-initial-year-value="<%= @selected_year %>">
+
+            <!-- Type Selector -->
+            <div class="heatmap-controls mb-3" style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
+              <label class="form-label" style="margin: 0;">Year:</label>
+              <select id="heatmapYear" class="form-select form-select-sm w-auto">
+                <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort.reverse %>
+                <% years.each do |year| %>
+                  <%= content_tag :option, year, value: year, selected: (year == @selected_year) %>
+                <% end %>
+              </select>
+
+              <label class="form-label" style="margin: 0;">Type:</label>
+              <select id="entityType" class="form-select form-select-sm w-auto">
+                <option value="artist">Artist</option>
+                <option value="track">Track</option>
+              </select>
+
+              <!-- Search Input -->
+              <label for="entitySearch" class="form-label" style="margin: 0;">Search:</label>
+              <input type="text"
+                    id="entitySearch"
+                    class="form-control form-control-sm"
+                    placeholder="Start typing artist or track..."
+                    style="width: 250px;">
+            </div>
+
+            <!-- Grid container -->
+            <div id="heatmap-grid" style="display: flex; flex-direction: column; flex-wrap: wrap; max-width: 800px; max-height: 100px; gap: 0;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </body>
