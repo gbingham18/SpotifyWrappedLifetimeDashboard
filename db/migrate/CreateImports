@@ -1,0 +1,15 @@
+class CreateImports < ActiveRecord::Migration[6.0]
+    def change
+        create_table :imports do |t|
+            t.string :file_name
+            t.integer :file_size
+            t.string :file_format
+            t.datetime :extracted_at
+
+            t.timestamps
+        end
+
+        add_reference :imports, :file_attachment, foreign_key: { to_table: :active_storage_attachments }
+        add_reference :imports, :file_blob, foreign_key: { to_table: :active_storage_blobs }
+    end
+end

@@ -1,0 +1,99 @@
+<% content_for :title, "Listening Summary" %>
+
+<% content_for :head do %>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    #barChart { display: none; margin-top: 30px; }
+    .section { margin-bottom: 30px; }
+    ul { list-style-type: none; padding: 0; }
+  </style>
+<% end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const headers = document.querySelectorAll(".accordion-header");
+
+    headers.forEach(header => {
+      header.addEventListener("click", function () {
+        this.classList.toggle("active");
+        const content = this.nextElementSibling;
+        content.style.display = content.style.display === "block" ? "none" : "block";
+      });
+    });
+  });
+</script>
+
+<body data-import-id="<%= @import.id %>" data-selected-year="<%= @selected_year %>" data-race-type="<%= @race_Type%>">
+  <div class="accordion">
+    <!-- Tile 1: Expanded by default -->
+    <div class="accordion-item">
+      <button class="accordion-header active">
+        <span class="chevron">&#9656;</span>
+        <span class="header-text">Listening Summary for Import <%= @import.id %></span>
+      </button>
+      <div class="accordion-content" style="display: block;">
+        <div class="year-selection">
+          <h3>Select Year</h3>
+          <%= form_with url: import_summary_path(@import), method: :get, local: true do %>
+            <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort.reverse %>
+            <%= select_tag :year, options_for_select(years, @selected_year), onchange: 'this.form.submit()' %>
+          <% end %>
+        </div>
+
+        <div class="summary-section">
+          <div class="top-artists">
+            <h3>Top Artists</h3>
+            <ol class="summary-list">
+              <% @top_artists.each do |artist, count| %>
+                <li class="list-item">
+                  <% if @artist_images[artist].present? %>
+                    <img src="<%= @artist_images[artist] %>" alt="<%= artist %>">
+                  <% end %>
+                  <div class="text">
+                    <strong><%= artist %></strong>: <%= count %> listens
+                  </div>
+                </li>
+              <% end %>
+            </ol>
+          </div>
+          <div class="top-tracks">
+            <h3>Top Tracks</h3>
+            <ol>
+              <% @top_tracks.each do |track, id, count| %>
+                <li class="list-item">
+                  <% if @track_images[track].present? %>
+                    <img src="<%= @track_images[track] %>" alt="<%= track %>">
+                  <% end %>
+                  <div class="text">
+                    <strong><%= track %></strong>: <%= count %> listens
+                  </div>
+                </li>
+              <% end %>
+            </ol>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="accordion-item">
+      <button class="accordion-header">
+        <span class="chevron">&#9656;</span>
+        Bar Chart Race
+      </button>
+      <div class="accordion-content" style="display: none;">
+        <div class="barchart-selection">
+          <button id="startChart">Start Bar Chart Race</button>
+          <select id="raceType" name="race_type">
+            <option value="Artists">Artists</option>
+            <option value="Tracks">Tracks</option>
+          </select>
+        </div>
+
+        <svg id="barChart" viewBox="0 0 650 600" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 95%; display: none;"></svg>
+
+        <%= javascript_include_tag "bar_chart", type: "module" %>
+      </div>
+    </div>
+  </div>
+</body>

@@ -1,0 +1,92 @@
+<div class="tile">
+  <h2>Upload Spotify Streaming History</h2>
+  <%= render 'form' %>
+  <div id="progress-container" style="display:none; width: 80%; height: 40px; border: 1px solid #ddd;">
+    <div id="progress-bar" style="width:0%; height: 100%; background-color: #4CAF50;"></div>
+  </div>
+  <div id="progress-text" style="margin-top: 8px; margin-bottom: 8px;"></div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const fileInput = document.getElementById("file-upload");
+    const uploadButton = document.getElementById("upload-button");
+    const form = document.getElementById("upload-form");
+    const progressContainer = document.getElementById("progress-container");
+    const progressBar = document.getElementById("progress-bar");
+    const progressText = document.getElementById("progress-text");
+
+    let importId = null;
+    let pollingInterval = null;
+
+    if (fileInput && uploadButton && form) {
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files.length === 0) {
+          uploadButton.disabled = true;
+          uploadButton.style.display = "none";
+        } else {
+          uploadButton.disabled = false;
+          uploadButton.style.display = "flex";
+        }
+      });
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(form);
+
+        uploadButton.disabled = true;
+        progressContainer.style.display = "block";
+        form.style.marginBottom = "0";
+        progressText.innerText = "Uploading and processing file...";
+
+        fetch(form.action, {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Accept": "application/json"
+          }
+        })
+        .then(res => res.json())
+        .then(data => {
+          importId = data.import_id;
+          startPolling(importId);
+        })
+        .catch(error => {
+          console.error("Upload error:", error);
+          progressText.innerText = "Error uploading file.";
+        });
+      });
+    }
+
+    function startPolling(importId) {
+      pollingInterval = setInterval(() => {
+        console.log("Polling import progress...");
+        fetch(`/imports/${importId}/status`)
+          .then(res => res.json())
+          .then(data => {
+            const progress = data.progress || 0;
+            console.log("here2")
+            console.log(progress)
+            progressContainer.style.display = "block";
+
+            progressBar.style.width = `${progress}%`;
+            progressText.innerText = `Processing... ${progress}%`;
+            progressBar.offsetWidth;
+
+            if (progress >= 100) {
+              clearInterval(pollingInterval);
+              progressText.innerText = "Import complete! Redirecting...";
+              setTimeout(() => {
+                window.location.href = `/imports/${importId}/summary`;
+              }, 100);
+            }
+          })
+          .catch(err => {
+            console.error("Polling error:", err);
+          });
+      }, 100);
+    }
+  });
+</script>
+

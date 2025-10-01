@@ -1,0 +1,51 @@
+<%= form_with(url: import_import_path, local: true, enctype: "multipart/form-data", id: "upload-form") do |form| %> 
+    <% if @import && @import.errors.any? %> 
+        <div id="error_explanation"> 
+            <h2><%= pluralize(@import.errors.count, "error") %> prohibited this import from being saved:</h2> 
+            <ul> 
+                <% @import.errors.full_messages.each do |message| %> 
+                    <li><%= message %></li> 
+                <% end %> 
+            </ul> 
+        </div> 
+    <% end %> 
+
+    <div class="field">
+    <label for="file-upload" class="file-upload-label">
+        Drag & Drop your zip file or <span class="browse-text" id="browse-link">browse</span>
+    </label>
+    <%= form.file_field :file, accept: 'application/zip', id: 'file-upload', style: 'display:none;' %>
+    </div>
+
+    <div class="actions"> 
+        <%= form.submit "Upload", id: "upload-button", disabled: true, style: "display:none;"%> 
+    </div> 
+<% end %>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const fileInput = document.getElementById("file-upload");
+    const uploadButton = document.getElementById("upload-button");
+    const form = document.getElementById("upload-form");
+    console.log(fileInput);
+    console.log(uploadButton);
+    if (fileInput && uploadButton && form) {
+      fileInput.addEventListener("change", function () {
+        if (fileInput.files.length === 0) {
+          uploadButton.disabled = true;
+          uploadButton.style.display = "none";
+        } else {
+          uploadButton.disabled = false;
+          uploadButton.style.display = "flex";
+        }
+      });
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        uploadButton.disabled = true;
+        uploadButton.style.display = "none";
+      });
+    }
+  });
+</script>
