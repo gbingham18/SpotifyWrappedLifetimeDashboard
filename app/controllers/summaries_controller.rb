@@ -1,8 +1,10 @@
 class SummariesController < ApplicationController
+  include SpotifyHelper
+
   before_action :set_import
 
   def show
-    selected_year = params[:year].presence || @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort.reverse.first
+    selected_year = params[:year].presence || @import.most_recent_year
     start_of_year = DateTime.new(selected_year.to_i, 1, 1)
     end_of_year = start_of_year.end_of_year
     @selected_year = selected_year.to_i
@@ -30,22 +32,7 @@ class SummariesController < ApplicationController
       next unless representative_imported_track_listen
 
       representative_imported_track_listen_spotify_id = extract_track_id(representative_imported_track_listen.spotify_track_uri)
-
-      representative_spotify_track = SpotifyTrack.find_or_initialize_by(spotify_id: representative_imported_track_listen_spotify_id)
-
-      if representative_spotify_track.new_record?
-          client = SpotifyApi::Client.new
-          spotify_api_response_track = client.get_track(representative_imported_track_listen_spotify_id)
-          if spotify_api_response_track
-            album_info = spotify_api_response_track.album
-            artist_info  = spotify_api_response_track.artists.first
-            representative_spotify_track.name = spotify_api_response_track.name
-            representative_spotify_track.thumbnail_url = album_info.images.min_by { |img| img.height }.url rescue nil
-            representative_spotify_track.artist_spotify_id = artist_info.id
-            representative_spotify_track.save
-          end
-      end
-
+      representative_spotify_track = SpotifyMetadataFetcher.fetch_track(representative_imported_track_listen_spotify_id)
       spotify_artist = SpotifyMetadataFetcher.fetch_artist(representative_spotify_track.artist_spotify_id)
       @artist_images[top_artist[0]] = spotify_artist.thumbnail_url
     end
@@ -105,10 +92,5 @@ class SummariesController < ApplicationController
 
   def set_import
     @import = Import.find(params[:import_id])
-  end
-
-  def extract_track_id(spotify_uri)
-      return nil unless spotify_uri.is_a?(String) && spotify_uri.start_with?("spotify:track:")
-      spotify_uri.split(":").last
   end
 end

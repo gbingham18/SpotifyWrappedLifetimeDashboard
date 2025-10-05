@@ -15,9 +15,13 @@ module SpotifyToken
     auth = Base64.strict_encode64("#{client_id}:#{client_secret}")
     request['Authorization'] = "Basic #{auth}"
 
-    response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(request)
-    end
+    http = Net::HTTP.new(uri.hostname, uri.port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE if Rails.env.development?
+
+    http.start
+    response = http.request(request)
+    http.finish
 
     JSON.parse(response.body)['access_token']
   end

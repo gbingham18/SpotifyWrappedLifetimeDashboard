@@ -31,6 +31,31 @@ class Import < ApplicationRecord
     self.file_format = file.content_type
   end
 
+  def available_years
+    populate_available_years if read_attribute(:available_years).blank?
+
+    years_string = read_attribute(:available_years)
+    return [] if years_string.blank?
+    years_string.split(',').map(&:to_i)
+  end
+
+  def most_recent_year
+    years = available_years
+    years.first
+  end
+
+  def populate_available_years
+    years = imported_track_listens
+      .distinct
+      .pluck(:time_stamp)
+      .map(&:year)
+      .uniq
+      .sort
+      .reverse
+
+    update(available_years: years.join(','))
+  end
+
   private
 
   def validate_zip_file

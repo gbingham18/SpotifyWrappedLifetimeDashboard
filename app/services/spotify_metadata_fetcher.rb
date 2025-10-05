@@ -1,10 +1,13 @@
 class SpotifyMetadataFetcher
-  def self.fetch_artist(artist_id)
+  def initialize(client = nil)
+    @client = client || SpotifyApi::Client.new
+  end
+
+  def fetch_artist(artist_id)
     spotify_artist = SpotifyArtist.find_or_initialize_by(spotify_id: artist_id)
     return spotify_artist if spotify_artist.thumbnail_url.present?
 
-    client = SpotifyApi::Client.new
-    spotify_api_response_artist = client.get_artist(artist_id)
+    spotify_api_response_artist = @client.get_artist(artist_id)
 
     if spotify_api_response_artist
       spotify_artist.name = spotify_api_response_artist.name
@@ -15,12 +18,11 @@ class SpotifyMetadataFetcher
     spotify_artist
   end
 
-  def self.fetch_track(track_id)
+  def fetch_track(track_id)
     spotify_track = SpotifyTrack.find_or_initialize_by(spotify_id: track_id)
     return spotify_track if spotify_track.thumbnail_url.present?
 
-    client = SpotifyApi::Client.new
-    spotify_api_response_track = client.get_track(track_id)
+    spotify_api_response_track = @client.get_track(track_id)
 
     if spotify_api_response_track
       album_api_info = spotify_api_response_track.album
@@ -33,5 +35,14 @@ class SpotifyMetadataFetcher
     end
 
     spotify_track
+  end
+
+  # Class method convenience wrappers for backward compatibility
+  def self.fetch_artist(artist_id)
+    new.fetch_artist(artist_id)
+  end
+
+  def self.fetch_track(track_id)
+    new.fetch_track(track_id)
   end
 end

@@ -21,6 +21,7 @@ class ImportFileProcessor
       end
     end
 
+    @import.populate_available_years
     update_progress(100)
   end
 
