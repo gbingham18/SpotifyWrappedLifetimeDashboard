@@ -1,4 +1,5 @@
 # typed: true
+
 class CreateTrackListens < ActiveRecord::Migration[8.0]
   def change
     create_table :track_listens do |t|

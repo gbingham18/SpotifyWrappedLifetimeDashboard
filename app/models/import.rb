@@ -36,7 +36,7 @@ class Import < ApplicationRecord
 
     years_string = read_attribute(:available_years)
     return [] if years_string.blank?
-    years_string.split(',').map(&:to_i)
+    years_string.split(",").map(&:to_i)
   end
 
   def most_recent_year
@@ -53,7 +53,7 @@ class Import < ApplicationRecord
       .sort
       .reverse
 
-    update(available_years: years.join(','))
+    update(available_years: years.join(","))
   end
 
   private

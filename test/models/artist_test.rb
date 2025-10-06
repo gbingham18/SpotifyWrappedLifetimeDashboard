@@ -11,6 +11,7 @@
 #
 
 # typed: strict
+
 require "test_helper"
 
 class ArtistTest < ActiveSupport::TestCase

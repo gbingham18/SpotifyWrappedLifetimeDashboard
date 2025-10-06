@@ -15,6 +15,7 @@
 #
 
 # typed: strict
+
 require "test_helper"
 
 class TrackListenTest < ActiveSupport::TestCase
