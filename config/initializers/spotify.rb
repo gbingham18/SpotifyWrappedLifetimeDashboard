@@ -24,6 +24,12 @@ module SpotifyToken
     response = http.request(request)
     http.finish
 
+    unless response.is_a?(Net::HTTPSuccess)
+      Rails.logger.error("Spotify token fetch failed: #{response.code} #{response.message}")
+      Rails.logger.error("Response body: #{response.body}")
+      raise "Failed to fetch Spotify token: #{response.code}"
+    end
+
     JSON.parse(response.body)["access_token"]
   end
 end

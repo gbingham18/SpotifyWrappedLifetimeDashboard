@@ -46,3 +46,4 @@ Rails.application.config.assets.precompile += %w[ delaunator.js ]
 Rails.application.config.assets.precompile += %w[ internmap.js ]
 Rails.application.config.assets.precompile += %w[ robust-predicates.js ]
 Rails.application.config.assets.precompile += %w[ controllers/heatmap_controller.js ]
+Rails.application.config.assets.precompile += %w( controllers/barchart_controller.js )

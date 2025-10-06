@@ -24,7 +24,7 @@
   });
 </script>
 
-<body data-import-id="<%= @import.id %>" data-selected-year="<%= @selected_year %>" data-race-type="<%= @race_Type%>">
+<body>
   <div class="accordion">
     <!-- Tile 1: Expanded by default -->
     <div class="accordion-item">
@@ -82,17 +82,20 @@
         Bar Chart Race
       </button>
       <div class="accordion-content" style="display: none;">
-        <div class="barchart-selection">
-          <button id="startChart">Start Bar Chart Race</button>
-          <select id="raceType" name="race_type">
-            <option value="Artists">Artists</option>
-            <option value="Tracks">Tracks</option>
-          </select>
+        <div data-controller="barchart"
+             data-barchart-import-id-value="<%= @import.id %>"
+             data-barchart-selected-year-value="<%= @selected_year %>"
+             data-barchart-race-type-value="Artists">
+          <div class="barchart-selection">
+            <button data-action="click->barchart#startRace">Start Bar Chart Race</button>
+            <select data-action="change->barchart#updateRaceType" name="race_type">
+              <option value="Artists">Artists</option>
+              <option value="Tracks">Tracks</option>
+            </select>
+          </div>
+
+          <svg data-barchart-target="svg" id="barChart" viewBox="0 0 650 600" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 95%; display: none;"></svg>
         </div>
-
-        <svg id="barChart" viewBox="0 0 650 600" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 95%; display: none;"></svg>
-
-        <%= javascript_include_tag "bar_chart", type: "module" %>
       </div>
     </div>
 
