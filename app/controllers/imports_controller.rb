@@ -20,13 +20,10 @@ class ImportsController < ApplicationController
             return
         end
 
-        @import = Import.create
+        @import = Import.new
         @import.file.attach(uploaded_file)
         @import.set_metadata
-
         if @import.save
-            ImportProcessorJob.perform_later(@import.id)
-
             respond_to do |format|
                 format.html { redirect_to import_summary_path(@import), notice: "ZIP file was successfully uploaded." }
                 format.json { render json: { import_id: @import.id }, status: :ok }

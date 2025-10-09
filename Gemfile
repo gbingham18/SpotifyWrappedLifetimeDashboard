@@ -1,4 +1,5 @@
 source "https://rubygems.org"
+ruby "3.4.2"
 # Used for Zip file processing
 gem "rubyzip"
 # A utility class for managing temporary files.
@@ -7,8 +8,6 @@ gem "tempfile"
 gem "rails", "~> 8.0.1"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
-# Use sqlite3 as the database for Active Record
-gem "sqlite3", ">= 2.1"
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -51,6 +50,9 @@ gem "thruster", require: false
 # gem "image_processing", "~> 1.2"
 
 gem "sidekiq"
+
+# Use PostgreSQL for production
+gem "pg", "~> 1.5"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem

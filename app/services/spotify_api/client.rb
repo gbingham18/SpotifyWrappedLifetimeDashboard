@@ -26,7 +26,11 @@ module SpotifyApi
       request = Net::HTTP::Get.new(uri)
       request["Authorization"] = "Bearer #{@access_token}"
 
-      response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      http.use_ssl = true
+      http.verify_mode = OpenSSL::SSL::VERIFY_NONE if Rails.env.development?
+
+      response = http.start do |http|
         http.request(request)
       end
 

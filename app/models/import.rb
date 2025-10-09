@@ -23,6 +23,12 @@ class Import < ApplicationRecord
     self.progress ||= 0
   end
 
+  after_save_commit :enqueue_processing_job, if: :saved_change_to_id?
+
+  def enqueue_processing_job
+    ImportProcessorJob.perform_later(id)
+  end
+
   def set_metadata
     return unless file.attached?
 
