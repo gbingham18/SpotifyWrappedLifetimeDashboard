@@ -8,9 +8,9 @@
 # For a containerized dev environment, see Dev Containers: https://guides.rubyonrails.org/getting_started_with_devcontainer.html
 
 # Make sure RUBY_VERSION matches the Ruby version in .ruby-version
-RUN echo ">>> BUILDING NEW IMAGE for ruby:3.4.2-slim <<<"
-
 FROM docker.io/library/ruby:3.4.2-slim AS base
+
+RUN echo ">>> BUILDING NEW IMAGE for ruby:3.4.2-slim <<<"
 
 # Rails app lives here
 WORKDIR /rails
@@ -31,8 +31,13 @@ FROM base AS build
 
 # Install packages needed to build gems
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git pkg-config && \
+    apt-get install --no-install-recommends -y \
+      build-essential \
+      git \
+      pkg-config \
+      libyaml-dev && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -46,11 +51,12 @@ COPY . .
 # Precompile bootsnap code for faster boot times
 RUN bundle exec bootsnap precompile app/ lib/
 
+# Add Node.js before asset precompilation
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+  && apt-get install -y nodejs
+
 # Precompiling assets for production without requiring secret RAILS_MASTER_KEY
 RUN SECRET_KEY_BASE_DUMMY=1 ./bin/rails assets:precompile
-
-
-
 
 # Final stage for app image
 FROM base
