@@ -38,7 +38,7 @@ gem "bootsnap", require: false
 # Bootstrap: Front-end framework for building responsive, mobile-first websites.
 # Provides a collection of pre-designed components, grid system, and JavaScript plugins.
 # For more details, visit: https://getbootstrap.com/
-gem "bootstrap", "~> 5.0.0"
+# gem "bootstrap", "~> 5.0.0"
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
@@ -47,12 +47,17 @@ gem "kamal", require: false
 gem "thruster", require: false
 
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-# gem "image_processing", "~> 1.2"
+gem "image_processing", "~> 1.2"
 
 gem "sidekiq"
 
 # Use PostgreSQL for production
 gem "pg", "~> 1.5"
+
+gem "vips"               # or libvips / ruby-vips
+gem "redis"              # if you're using Redis-backed stores
+gem "dalli"              # for MemCacheStore
+# gem "webrobots"                   # if using `robots.txt` parsing
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
@@ -80,16 +85,11 @@ group :development, :test do
   gem "sorbet"
   gem "sorbet-runtime"
   # Sorbet requires these to analyze things
-  gem "image_processing", "~> 1.2"   # for image variants (ActiveStorage)
   gem "listen"                       # used in dev by file watchers
-  gem "webrobots"                   # if using `robots.txt` parsing
   gem "sprockets-rails"            # for asset pipeline compatibility
   gem "selenium-webdriver"
   gem "ruby_parser"        # required by prism
   gem "html_truncator"     # used in some ActionView helpers
-  gem "redis"              # if you're using Redis-backed stores
-  gem "dalli"              # for MemCacheStore
-  gem "vips"               # or libvips / ruby-vips
 
   # Optional: For docs
   gem "yard"
