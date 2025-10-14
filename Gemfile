@@ -1,5 +1,5 @@
 source "https://rubygems.org"
-ruby "3.4.2"
+ruby "3.4.6"
 # Used for Zip file processing
 gem "rubyzip"
 # A utility class for managing temporary files.
