@@ -54,7 +54,7 @@ gem "sidekiq"
 # Use PostgreSQL for production
 gem "pg", "~> 1.5"
 
-gem "vips"               # or libvips / ruby-vips
+gem "mini_magick"        # ImageMagick wrapper for image processing
 gem "redis"              # if you're using Redis-backed stores
 gem "dalli"              # for MemCacheStore
 # gem "webrobots"                   # if using `robots.txt` parsing
