@@ -10,7 +10,7 @@
 # syntax=docker/dockerfile:1
 FROM ruby:3.4.6-slim AS base
 
-RUN echo ">>> BUILDING NEW IMAGE for ruby:3.4.2-slim <<<"
+RUN echo ">>> BUILDING NEW IMAGE for ruby:3.4.6-slim <<<"
 
 WORKDIR /rails
 
@@ -21,7 +21,7 @@ RUN apt-get update -qq && \
       libvips \
       libpq-dev \
       libmemcached-dev \
-      redis-server \
+      redis-server && \
     rm -rf /var/lib/apt/lists/*
 
 ENV RAILS_ENV=production \
