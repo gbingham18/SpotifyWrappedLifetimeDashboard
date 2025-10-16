@@ -38,7 +38,7 @@ gem "bootsnap", require: false
 # Bootstrap: Front-end framework for building responsive, mobile-first websites.
 # Provides a collection of pre-designed components, grid system, and JavaScript plugins.
 # For more details, visit: https://getbootstrap.com/
-gem "bootstrap", "~> 5.0.0"
+# gem "bootstrap", "~> 5.0.0"
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
@@ -54,7 +54,7 @@ gem "sidekiq"
 # Use PostgreSQL for production
 gem "pg", "~> 1.5"
 
-gem "mini_magick"        # ImageMagick wrapper for image processing
+gem "vips"               # or libvips / ruby-vips
 gem "redis"              # if you're using Redis-backed stores
 gem "dalli"              # for MemCacheStore
 # gem "webrobots"                   # if using `robots.txt` parsing
