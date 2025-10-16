@@ -22,8 +22,6 @@ RUN apt-get update -qq && \
       libpq-dev \
       libmemcached-dev \
       redis-server \
-      nodejs \
-      yarn && \
     rm -rf /var/lib/apt/lists/*
 
 ENV RAILS_ENV=production \
