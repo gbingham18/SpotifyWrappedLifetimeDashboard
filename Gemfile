@@ -35,7 +35,7 @@ gem "bootsnap", require: false
 # Bootstrap: Front-end framework for building responsive, mobile-first websites.
 # Provides a collection of pre-designed components, grid system, and JavaScript plugins.
 # For more details, visit: https://getbootstrap.com/
-gem "bootstrap", "~> 5.0.0"
+gem "bootstrap", "~> 5.3.5"
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", require: false
