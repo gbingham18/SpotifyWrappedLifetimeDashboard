@@ -22,9 +22,6 @@ body {
     align-items: center;
     justify-content: flex-start;       
     background-color: #171717;
-    margin-left: 25%;
-    margin-right: 25%;
-    width: 50%;
     margin-top: 5%;
     padding-top: 2.5%;
     form {
@@ -45,71 +42,14 @@ body {
     }
 }
 
+#upload-tile {
+  margin-left: 25%;
+  margin-right: 25%;
+  width: 50%;
+}
+
 .center-container {
     margin-bottom: 5%;
-}
-
-.accordion {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.accordion-header {
-  display: flex;
-  align-items: center;
-  justify-content: center; /* Centers everything */
-  position: relative;      /* Needed for absolute chevron */
-  width: 100%;
-  padding: 16px;
-  font-size: 1.25rem;
-  font-weight: bold;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  margin-bottom: 4px;
-}
-
-.accordion-item {
-  background-color: #2A2A2A;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 800px;
-  margin: auto;
-}
-
-.accordion-content {
-  padding: 16px;
-  background-color: #171717;
-  border: 1px solid #ddd;
-  border-top: none;
-  display: flex;
-  flex-direction: column;
-  max-width: 800px;
-  width: 100%;
-  button, select {
-    background-color: #1ed760;   /* Spotify green */
-    color: white;                /* Text color for contrast */
-    border: none;                /* Remove default borders */
-    padding: 6px 12px;          /* Add space inside the button */
-    border-radius: 9999px;       /* Large value makes it pill-shaped */
-    font-size: 14px;             /* Optional: tweak font size */
-    cursor: pointer;             /* Show pointer on hover */
-    transition: background-color 0.3s ease; /* Smooth hover effect */
-  }
-}
-
-.chevron {
-  position: absolute;
-  left: 16px; /* or adjust to taste */
-  transition: transform 0.2s ease;
-  font-size: 2rem;
-}
-
-.accordion-header.active .chevron {
-  transform: rotate(90deg); /* Rotate when active */
 }
 
 .header-text {
@@ -130,8 +70,8 @@ body {
   display: flex;
   justify-content: space-between;
   gap: 4rem;
-  margin-left: 10%;
-  margin-right: 10%;
+  margin-left: 5%;
+  margin-right: 5%;
 }
 
 .year-selection {
@@ -140,6 +80,35 @@ body {
   white-space: nowrap;
   overflow: hidden;
   gap: 1rem;
+}
+
+.year-selector-top {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.year-button {
+  background-color: #171717;
+  color: #E0E0E0;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #2A2A2A;
+    color: #E0E0E0;
+  }
+
+  &.active {
+    background-color: #1ed760;
+    color: white;
+  }
 }
 
 ol {
@@ -256,11 +225,57 @@ ol {
   object-fit: cover;
 }
 
+.heatmap-month-row {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.heatmap-month-label {
+  width: 12px;
+  height: 15px;
+  font-size: 10px;
+  text-align: center;
+  color: #666;
+}
+
+.heatmap-row {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.heatmap-day-label {
+  width: 30px;
+  height: 12px;
+  font-size: 10px;
+  line-height: 12px;
+  text-align: right;
+  padding-right: 5px;
+  color: #666;
+}
+
 .heatmap-cell {
   width: 12px;
   height: 12px;
-  margin: 1px 1px;
   border-radius: 2px;
+}
+
+.heatmap-cell.empty-cell {
+  opacity: 0.3;
+}
+
+.streaming-stats-tile {
+  align-items: flex-start;
+  padding-left: 5%;
+  h3 {
+    align-self: flex-start;
+    width: 100%;
+  }
+}
+
+.container-fluid {
+   padding-left: 0; 
 }
 
 .level-0 { background-color: #eee; }

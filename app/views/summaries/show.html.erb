@@ -4,84 +4,126 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; }
-    #barChart { display: none; margin-top: 30px; }
-    .section { margin-bottom: 30px; }
+    .container-fluid { display: flex; min-height: 100vh; }
+    .sidebar { width: 200px; background-color: #171717; padding: 20px; margin-top: 30px; border-radius: 8px; }
+    .sidebar h2 { font-size: 1.5rem; margin-bottom: 20px; }
+    .menu-item { padding: 10px 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; transition: background-color 0.2s; }
+    .menu-item:hover { background-color: #2A2A2A }
+    .menu-item.active { background-color: #1ed760; color: white; }
+    .content-area { flex: 1; padding: 30px; padding-bottom: 0; }
+    .content-section { display: none; }
+    .content-section.active { display: block; }
+    .tile { padding-top: 20px; padding-bottom: 20px; }
+    .tile h3 { margin-top: 0; }
+    .tile-row { display: flex; gap: 20px; margin-bottom: 20px; }
+    .summary-tile { flex: 1; margin-left: 0; margin-right: 0; width: 60%; }
+    .streaming-stats-tile { flex: 1; margin-left: 0; margin-right: 0; max-width: 40%; align-items: flex-start; text-align: left; }
+    .tile-full { margin-left: 0; margin-right: 0; }
     ul { list-style-type: none; padding: 0; }
   </style>
 <% end %>
 
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const headers = document.querySelectorAll(".accordion-header");
+  document.addEventListener("turbo:load", function () {
+    const menuItems = document.querySelectorAll(".menu-item");
+    const contentSections = document.querySelectorAll(".content-section");
 
-    headers.forEach(header => {
-      header.addEventListener("click", function () {
-        this.classList.toggle("active");
-        const content = this.nextElementSibling;
-        content.style.display = content.style.display === "block" ? "none" : "block";
+    menuItems.forEach(item => {
+      item.addEventListener("click", function () {
+        const target = this.dataset.target;
+
+        menuItems.forEach(m => m.classList.remove("active"));
+        this.classList.add("active");
+
+        contentSections.forEach(section => section.classList.remove("active"));
+        document.getElementById(target).classList.add("active");
       });
     });
   });
 </script>
 
-<body>
-  <div class="accordion">
-    <!-- Tile 1: Expanded by default -->
-    <div class="accordion-item">
-      <button class="accordion-header active">
-        <span class="chevron">&#9656;</span>
-        <span class="header-text">Listening Summary for Import <%= @import.id %></span>
-      </button>
-      <div class="accordion-content" style="display: block;">
-        <div class="year-selection">
-          <h3>Select Year</h3>
-          <%= form_with url: import_summary_path(@import), method: :get, local: true do %>
-            <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort.reverse %>
-            <%= select_tag :year, options_for_select(years, @selected_year), onchange: 'this.form.submit()' %>
-          <% end %>
-        </div>
+<div class="container-fluid">
+  <div class="sidebar">
+    <h2>Summary</h2>
+    <div class="menu-item active" data-target="overview">Overview</div>
+    <div class="menu-item" data-target="insights">Insights</div>
+    <div class="menu-item" data-target="fullvisibility">Full Visibility</div>
+  </div>
 
-        <div class="summary-section">
-          <div class="top-artists">
-            <h3>Top Artists</h3>
-            <ol class="summary-list">
-              <% @top_artists.each do |artist, count| %>
-                <li class="list-item">
-                  <% if @artist_images[artist].present? %>
-                    <img src="<%= @artist_images[artist] %>" alt="<%= artist %>">
-                  <% end %>
-                  <div class="text">
-                    <strong><%= artist %></strong>: <%= count %> listens
-                  </div>
-                </li>
-              <% end %>
-            </ol>
-          </div>
-          <div class="top-tracks">
-            <h3>Top Tracks</h3>
-            <ol>
-              <% @top_tracks.each do |track, id, count| %>
-                <li class="list-item">
-                  <% if @track_images[track].present? %>
-                    <img src="<%= @track_images[track] %>" alt="<%= track %>">
-                  <% end %>
-                  <div class="text">
-                    <strong><%= track %></strong>: <%= count %> listens
-                  </div>
-                </li>
-              <% end %>
-            </ol>
-          </div>
-        </div>
-      </div>
+  <div class="content-area">
+    <!-- Year Selection at Top -->
+    <div class="year-selector-top">
+      <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort %>
+      <% years.each do |year| %>
+        <%= link_to year, import_summary_path(@import, year: year),
+            class: "year-button #{'active' if year == @selected_year}" %>
+      <% end %>
     </div>
 
-    <div class="accordion-item">
-      <button class="accordion-header">
-        <span class="chevron">&#9656;</span>
-        Bar Chart Race
-      </button>
-      <div class="accordion-content" style="display: none;">
+    <!-- Overview Section -->
+    <div id="overview" class="content-section active">
+      <div class="tile-row">
+        <div class="tile summary-tile">
+          <div class="summary-section">
+            <div class="top-artists">
+              <h3>Top Artists</h3>
+              <ol class="summary-list">
+                <% @top_artists.each do |artist, count| %>
+                  <li class="list-item">
+                    <% if @artist_images[artist].present? %>
+                      <img src="<%= @artist_images[artist] %>" alt="<%= artist %>">
+                    <% end %>
+                    <div class="text">
+                      <strong><%= artist %></strong>: <%= count %> listens
+                    </div>
+                  </li>
+                <% end %>
+              </ol>
+            </div>
+            <div class="top-tracks">
+              <h3>Top Tracks</h3>
+              <ol>
+                <% @top_tracks.each do |track, id, count| %>
+                  <li class="list-item">
+                    <% if @track_images[track].present? %>
+                      <img src="<%= @track_images[track] %>" alt="<%= track %>">
+                    <% end %>
+                    <div class="text">
+                      <strong><%= track %></strong>: <%= count %> listens
+                    </div>
+                  </li>
+                <% end %>
+              </ol>
+            </div>
+          </div>
+        </div>
+
+        <div class="tile streaming-stats-tile">
+          <h3 style="display: flex; align-items: center; gap: 10px;">
+            <%= image_tag 'streamsIcon.png', style: 'width: 50px; height: 50px;' %>
+            Streams: <%= @total_streams %>
+          </h3>
+          <h3 style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;">
+              <%= image_tag 'hourglassIcon.png', style: 'height: 100%; width: auto; margin-right: 8px; margin-left: 8px;' %>
+            </div>
+            Minutes Listened: <%= (@total_streaming_time / 60000).round(0) %>
+          </h3>
+          <h3 style="display: flex; align-items: center; gap: 10px;">
+            <%= image_tag 'artistsIcon.png', style: 'width: 50px; height: 50px;' %>
+            Total Artists: <%= @total_artists %>
+          </h3>
+          <h3 style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;">
+              <%= image_tag 'tracksIcon.png', style: 'height: 100%; width: auto; margin-right: 3px; margin-left: 3px;' %>
+            </div>
+            Total Tracks: <%= @total_tracks %>
+          </h3>
+        </div>
+      </div>
+
+      <div class="tile">
+        <h3>Bar Chart Race</h3>
         <div data-controller="barchart"
              data-barchart-import-id-value="<%= @import.id %>"
              data-barchart-selected-year-value="<%= @selected_year %>"
@@ -99,48 +141,111 @@
       </div>
     </div>
 
-    <div class="accordion-item">
-      <button class="accordion-header">
-        <span class="chevron">&#9656;</span>
-          🎧 Listening Intensity Heatmap
-      </button>
-      <div class="accordion-content" style="display: none;">
-        <div class="accordion-body">
+    <div id="insights" class="content-section">
+      <div class="tile">
+        <h3>Listening Behavior</h3>
 
-          <div data-controller="heatmap"
-              data-heatmap-import-id-value="<%= @import.id %>"
-              data-heatmap-initial-year-value="<%= @selected_year %>">
+        <!-- Timezone Selector -->
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+          <label for="timezone-select" style="margin: 0;">Timezone:</label>
+          <select id="timezone-select"
+                  data-action="change->hourly-listening#changeTimezone change->daily-listening#changeTimezone"
+                  class="form-select form-select-sm w-auto">
+            <option value="America/Los_Angeles">Pacific Time (PST/PDT)</option>
+            <option value="America/Denver">Mountain Time (MST/MDT)</option>
+            <option value="America/Chicago">Central Time (CST/CDT)</option>
+            <option value="America/New_York">Eastern Time (EST/EDT)</option>
+            <option value="America/Phoenix">Arizona (MST)</option>
+            <option value="America/Anchorage">Alaska (AKST/AKDT)</option>
+            <option value="Pacific/Honolulu">Hawaii (HST)</option>
+            <option value="UTC">UTC</option>
+            <option value="Europe/London">London (GMT/BST)</option>
+            <option value="Europe/Paris">Paris (CET/CEST)</option>
+            <option value="Europe/Berlin">Berlin (CET/CEST)</option>
+            <option value="Asia/Tokyo">Tokyo (JST)</option>
+            <option value="Asia/Shanghai">Shanghai (CST)</option>
+            <option value="Asia/Dubai">Dubai (GST)</option>
+            <option value="Australia/Sydney">Sydney (AEDT/AEST)</option>
+          </select>
+        </div>
 
-            <!-- Type Selector -->
-            <div class="heatmap-controls mb-3" style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
-              <label class="form-label" style="margin: 0;">Year:</label>
-              <select id="heatmapYear" class="form-select form-select-sm w-auto">
-                <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort.reverse %>
-                <% years.each do |year| %>
-                  <%= content_tag :option, year, value: year, selected: (year == @selected_year) %>
-                <% end %>
-              </select>
-
-              <label class="form-label" style="margin: 0;">Type:</label>
-              <select id="entityType" class="form-select form-select-sm w-auto">
-                <option value="artist">Artist</option>
-                <option value="track">Track</option>
-              </select>
-
-              <!-- Search Input -->
-              <label for="entitySearch" class="form-label" style="margin: 0;">Search:</label>
-              <input type="text"
-                    id="entitySearch"
-                    class="form-control form-control-sm"
-                    placeholder="Start typing artist or track..."
-                    style="width: 250px;">
-            </div>
-
-            <!-- Grid container -->
-            <div id="heatmap-grid" style="display: flex; flex-direction: column; flex-wrap: wrap; max-width: 800px; max-height: 100px; gap: 0;"></div>
+        <div style="display: flex; gap: 20px;">
+          <div data-controller="hourly-listening"
+               data-hourly-listening-import-id-value="<%= @import.id %>"
+               data-hourly-listening-selected-year-value="<%= @selected_year %>"
+               style="flex: 1;">
+            <div id="hourly-chart"></div>
           </div>
+
+          <div data-controller="daily-listening"
+               data-daily-listening-import-id-value="<%= @import.id %>"
+               data-daily-listening-selected-year-value="<%= @selected_year %>"
+               style="flex: 1;">
+            <div id="daily-chart"></div>
+          </div>
+        </div>
+      </div>
+      <div class="tile">
+        <h3>Listening Distribution</h3>
+        <div data-controller="streamgraph"
+             data-streamgraph-import-id-value="<%= @import.id %>"
+             data-streamgraph-selected-year-value="<%= @selected_year %>"
+             data-streamgraph-race-type-value="Artists">
+
+          <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <label for="streamgraph-type-select" style="margin: 0;">Type:</label>
+            <select id="streamgraph-type-select"
+                    data-streamgraph-target="typeSelect"
+                    data-action="change->streamgraph#changeType"
+                    class="form-select form-select-sm w-auto">
+              <option value="Artists">Artists</option>
+              <option value="Tracks">Tracks</option>
+            </select>
+          </div>
+
+          <svg data-streamgraph-target="svg" id="streamGraph" width="900" height="500"></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Visibility Section -->
+    <div id="fullvisibility" class="content-section">
+      <div class="tile">
+        <h3>Listening Intensity Heatmap</h3>
+        <div data-controller="heatmap"
+            data-heatmap-import-id-value="<%= @import.id %>"
+            data-heatmap-initial-year-value="<%= @selected_year %>">
+
+          <!-- Type Selector -->
+          <div class="heatmap-controls mb-3" style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
+            <label class="form-label" style="margin: 0;">Type:</label>
+            <select id="entityType" class="form-select form-select-sm w-auto">
+              <option value="artist">Artist</option>
+              <option value="track">Track</option>
+            </select>
+
+            <!-- Search Input -->
+            <label for="entitySearch" class="form-label" style="margin: 0;">Search:</label>
+            <input type="text"
+                  id="entitySearch"
+                  class="form-control form-control-sm"
+                  placeholder="Start typing artist or track..."
+                  style="width: 250px;">
+          </div>
+
+          <!-- Grid container -->
+          <div id="heatmap-grid" style="margin-top: 20px;"></div>
+        </div>
+      </div>
+
+      <div class="tile">
+        <h3>Listening Tree</h3>
+        <div data-controller="tree"
+             data-tree-import-id-value="<%= @import.id %>"
+             data-tree-selected-year-value="<%= @selected_year %>">
+          <div id="tree-container" style="width: 100%; min-width: 800px; height: 300px; margin-bottom: 1rem; overflow: auto;"></div>
         </div>
       </div>
     </div>
   </div>
-</body>
+</div>

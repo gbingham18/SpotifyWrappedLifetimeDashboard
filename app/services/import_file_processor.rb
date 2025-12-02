@@ -43,16 +43,18 @@ class ImportFileProcessor
 
       artist_data[date_str][artist_name] += 1 if artist_name.present?
       track_data[date_str][track_name]   += 1 if track_name.present?
-
-      ImportedTrackListen.create!(
-        track_name: track_name,
-        artist_name: artist_name,
-        album_name: data["master_metadata_album_album_name"],
-        spotify_track_uri: data["spotify_track_uri"],
-        time_stamp: timestamp,
-        time_played: data["ms_played"],
-        import_id: @import_id
-      )
+      
+      if timestamp >= 30000
+        ImportedTrackListen.create!(
+          track_name: track_name,
+          artist_name: artist_name,
+          album_name: data["master_metadata_album_album_name"],
+          spotify_track_uri: data["spotify_track_uri"],
+          time_stamp: timestamp,
+          time_played: data["ms_played"],
+          import_id: @import_id
+        )
+      end
 
       if index % 10 == 0 || index == total_entries - 1
         current_progress = calculate_progress(json_index, total_json_files, index, total_entries)
