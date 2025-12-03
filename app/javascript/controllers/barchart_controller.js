@@ -86,8 +86,6 @@ export default class extends Controller {
     const dates = Object.keys(data).sort()
     const dataByDate = dates.map(date => data[date])
 
-    console.log(dataByDate)
-
     this.runAnimation(svg, g, x, y, title, dateDisplay, dates, dataByDate)
   }
 
@@ -119,13 +117,11 @@ export default class extends Controller {
 
     const step = () => {
       if (dataIndex >= dates.length) return
-      console.log("data index")
-      console.log(dataIndex)
       const top10 = this.getTop10Cumulative(dataByDate, cumulativeData, dataIndex)
       this.updateChart(svg, g, x, y, title, dateDisplay, top10, dates[dataIndex])
 
       dataIndex++
-      this.animationTimer = setTimeout(step, 1000)
+      this.animationTimer = setTimeout(step, 500)
     }
 
     step()
@@ -151,12 +147,11 @@ export default class extends Controller {
     const values = top10.map(d => d[1].count)
 
     this.updateColors(labels)
-    this.updateImages(svg, y, top10)
 
     x.domain([0, d3.max(values)])
     y.domain(labels)
 
-    title.text(`Top 10 ${this.raceTypeValue} (Cumulative) – ${this.selectedYearValue}`)
+    title.text(`Top 10 ${this.raceTypeValue} (Cumulative) - ${this.selectedYearValue}`)
 
     // Update date display (remove year)
     const dateObj = new Date(date)
@@ -165,6 +160,7 @@ export default class extends Controller {
 
     this.updateBars(g, x, y, top10)
     this.updateLabels(g, x, y, top10)
+    this.updateImages(svg, y, top10)
   }
 
   updateColors(labels) {
@@ -246,6 +242,7 @@ export default class extends Controller {
       .transition()
       .duration(800)
       .attr("y", d => y(d[0]))
+      .attr("height", y.bandwidth())
       .attr("width", d => x(d[1].count))
 
     bars.exit().remove()
@@ -267,7 +264,11 @@ export default class extends Controller {
       .attr("y", d => y(d[0]) + y.bandwidth() / 2)
       .attr("x", d => x(d[1].count) - 5)
       .each((d, i, nodes) => {
-        const label = `${d[0]}`
+        let label = `${d[0]}`
+        // Truncate long labels to 40 characters
+        if (label.length > 40) {
+          label = label.substring(0, 40) + "..."
+        }
         const textEl = d3.select(nodes[i])
         textEl.selectAll("tspan").remove()
 
