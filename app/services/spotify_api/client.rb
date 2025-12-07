@@ -36,7 +36,7 @@ module SpotifyApi
 
       parsed = JSON.parse(response.body)
 
-      raise "Spotify API Error: #{parsed['error']&.dig('message') || 'Unknown error'}" if response.code.to_i >= 400
+      raise "Spotify API Error: #{parsed['error']&.dig('message') || 'Unknown error'}, request_path: #{path}" if response.code.to_i >= 400
 
       parsed
     end
