@@ -15,8 +15,9 @@ class ImportFileProcessor
           !entry.name.start_with?("__MACOSX/") &&
           !File.basename(entry.name).start_with?("._")
       end
+
       json_entries.each_with_index do |entry, index|
-        puts entry.name
+        puts "Processing: #{entry.name}"
         process_json_entry(entry, index, json_entries.size)
       end
     end
@@ -30,23 +31,23 @@ class ImportFileProcessor
   def process_json_entry(entry, json_index, total_json_files)
     json_data = JSON.parse(entry.get_input_stream.read)
 
-    artist_data = Hash.new { |h, k| h[k] = Hash.new(0) }
-    track_data  = Hash.new { |h, k| h[k] = Hash.new(0) }
+    # Aggregate artist/track counts per year
+    artist_data_by_year = Hash.new { |h, k| h[k] = Hash.new(0) }
+    track_data_by_year = Hash.new { |h, k| h[k] = Hash.new(0) }
 
     total_entries = json_data.size
-    batch_size    = [ total_entries / 10, 1000 ].min
-
+    batch_size = [ total_entries / 10, 1000 ].min
     records_to_insert = []
 
     json_data.each_with_index do |data, index|
       timestamp = DateTime.parse(data["ts"])
-      date_str  = timestamp.to_date.to_s
+      year = timestamp.year
 
-      track_name  = data["master_metadata_track_name"]
+      track_name = data["master_metadata_track_name"]
       artist_name = data["master_metadata_album_artist_name"]
 
-      artist_data[date_str][artist_name] += 1 if artist_name.present?
-      track_data[date_str][track_name]   += 1 if track_name.present?
+      artist_data_by_year[year][artist_name] += 1 if artist_name.present?
+      track_data_by_year[year][track_name] += 1 if track_name.present?
 
       time_played = data["ms_played"]
 
@@ -64,7 +65,7 @@ class ImportFileProcessor
         }
       end
 
-      # Insert in batches
+      # Bulk insert in batches
       if records_to_insert.size >= batch_size
         ImportedTrackListen.insert_all(records_to_insert)
         records_to_insert.clear
@@ -80,13 +81,30 @@ class ImportFileProcessor
     # Insert any remaining records
     ImportedTrackListen.insert_all(records_to_insert) if records_to_insert.any?
 
-    save_bar_chart_data(artist_data, track_data)
+    # Save BarChartRaceDatum per year
+    artist_data_by_year.each do |year, artists|
+      BarChartRaceDatum.create!(
+        import: @import,
+        year: year,
+        race_type: "Artists",
+        data: artists
+      )
+    end
+
+    track_data_by_year.each do |year, tracks|
+      BarChartRaceDatum.create!(
+        import: @import,
+        year: year,
+        race_type: "Tracks",
+        data: tracks
+      )
+    end
+
   rescue JSON::ParserError => e
     Rails.logger.error("Error parsing JSON: #{e.message}")
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("Error saving model records: #{e.message}")
   end
-
 
   def calculate_progress(json_index, total_json_files, entry_index, total_entries)
     file_progress = (entry_index + 1).to_f / total_entries
@@ -99,23 +117,5 @@ class ImportFileProcessor
     @import.update(progress: percent)
   rescue => e
     Rails.logger.error("Failed to update progress: #{e.message}")
-  end
-
-  def save_bar_chart_data(artist_data, track_data)
-    selected_year = @import.imported_track_listens.minimum(:time_stamp)&.year || Date.today.year
-
-    BarChartRaceDatum.create!(
-      import: @import,
-      year: selected_year,
-      race_type: "Artists",
-      data: artist_data
-    )
-
-    BarChartRaceDatum.create!(
-      import: @import,
-      year: selected_year,
-      race_type: "Tracks",
-      data: track_data
-    )
   end
 end
