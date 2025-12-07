@@ -49,6 +49,11 @@ class ImportFileProcessor
       year = timestamp.year
 
       track_name = data["master_metadata_track_name"]
+
+      if track_name.nil?
+        next
+      end
+
       artist_name = data["master_metadata_album_artist_name"]
 
       # Global aggregation (spanning ALL JSON files)
