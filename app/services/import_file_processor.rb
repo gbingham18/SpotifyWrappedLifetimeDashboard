@@ -34,6 +34,10 @@ class ImportFileProcessor
     track_data  = Hash.new { |h, k| h[k] = Hash.new(0) }
 
     total_entries = json_data.size
+    batch_size    = [ total_entries / 10, 1000 ].min
+
+    records_to_insert = []
+
     json_data.each_with_index do |data, index|
       timestamp = DateTime.parse(data["ts"])
       date_str  = timestamp.to_date.to_s
@@ -43,24 +47,38 @@ class ImportFileProcessor
 
       artist_data[date_str][artist_name] += 1 if artist_name.present?
       track_data[date_str][track_name]   += 1 if track_name.present?
-      
-      if timestamp >= 30000
-        ImportedTrackListen.create!(
+
+      time_played = data["ms_played"]
+
+      if time_played >= 30000
+        records_to_insert << {
           track_name: track_name,
           artist_name: artist_name,
           album_name: data["master_metadata_album_album_name"],
           spotify_track_uri: data["spotify_track_uri"],
           time_stamp: timestamp,
-          time_played: data["ms_played"],
-          import_id: @import_id
-        )
+          time_played: time_played,
+          import_id: @import_id,
+          created_at: Time.current,
+          updated_at: Time.current
+        }
       end
 
-      if index % 10 == 0 || index == total_entries - 1
+      # Insert in batches
+      if records_to_insert.size >= batch_size
+        ImportedTrackListen.insert_all(records_to_insert)
+        records_to_insert.clear
+      end
+
+      # Update progress periodically
+      if index % batch_size == 0 || index == total_entries - 1
         current_progress = calculate_progress(json_index, total_json_files, index, total_entries)
         update_progress(current_progress)
       end
     end
+
+    # Insert any remaining records
+    ImportedTrackListen.insert_all(records_to_insert) if records_to_insert.any?
 
     save_bar_chart_data(artist_data, track_data)
   rescue JSON::ParserError => e
@@ -68,6 +86,7 @@ class ImportFileProcessor
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("Error saving model records: #{e.message}")
   end
+
 
   def calculate_progress(json_index, total_json_files, entry_index, total_entries)
     file_progress = (entry_index + 1).to_f / total_entries
