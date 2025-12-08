@@ -5,14 +5,16 @@ class SearchesController < ApplicationController
     type = params[:type]
     query = params[:q].to_s.strip.downcase
 
-    unless %w[artist track].include?(type)
+    unless %w[Artists Tracks].include?(type)
       render json: { error: "Invalid type" }, status: :bad_request and return
     end
 
+    name_type = type == "Artists" ? "artist_name" : "track_name"
+
     results = @import.imported_track_listens
-      .where.not("#{type}_name": [ nil, "" ])
+      .where.not("#{name_type}": [ nil, "" ])
       .distinct
-      .pluck("#{type}_name")
+      .pluck("#{name_type}")
       .select { |name| name.downcase.include?(query) }
       .sort
       .first(20)
