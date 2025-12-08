@@ -62,12 +62,11 @@ class ImportFileProcessor
       next if uri.blank? || !uri.start_with?("spotify:track:")
       next if track_name.blank? || artist_name.blank?
 
-      # Aggregate per year → date → artist
-      @artist_data_by_year[year][date_str][artist_name] += 1
-      @track_data_by_year[year][date_str][track_name]   += 1
-
       # Only insert tracks with enough play time
       if data["ms_played"].to_i >= 30000
+        # Aggregate per year → date → artist
+        @artist_data_by_year[year][date_str][artist_name] += 1
+        @track_data_by_year[year][date_str][track_name]   += 1
         records_to_insert << {
           track_name: track_name,
           artist_name: artist_name,
