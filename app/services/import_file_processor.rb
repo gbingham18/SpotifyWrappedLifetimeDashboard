@@ -7,9 +7,14 @@ class ImportFileProcessor
     @import_id = import_id
     @import = Import.find(@import_id)
 
-    # GLOBAL aggregation across ALL JSON files in the ZIP
-    @artist_data_by_year = Hash.new { |h, k| h[k] = Hash.new(0) }
-    @track_data_by_year  = Hash.new { |h, k| h[k] = Hash.new(0) }
+    # 3-level nested hash: year → date → artist/track → count
+    @artist_data_by_year = Hash.new do |h, year|
+      h[year] = Hash.new { |h2, date| h2[date] = Hash.new(0) }
+    end
+
+    @track_data_by_year = Hash.new do |h, year|
+      h[year] = Hash.new { |h2, date| h2[date] = Hash.new(0) }
+    end
   end
 
   def process
@@ -26,7 +31,7 @@ class ImportFileProcessor
       end
     end
 
-    # After ALL JSON files processed → save once
+    # Final write: after ALL entries processed
     save_bar_chart_data
 
     @import.populate_available_years
@@ -46,49 +51,49 @@ class ImportFileProcessor
 
     json_data.each_with_index do |data, index|
       timestamp = DateTime.parse(data["ts"])
-      year = timestamp.year
+      year      = timestamp.year
+      date_str  = timestamp.to_date.to_s
 
-      track_name = data["master_metadata_track_name"]
-
-      if track_name.nil?
-        next
-      end
-
+      track_name  = data["master_metadata_track_name"]
       artist_name = data["master_metadata_album_artist_name"]
+      uri         = data["spotify_track_uri"]
 
-      # Global aggregation (spanning ALL JSON files)
-      @artist_data_by_year[year][artist_name] += 1 if artist_name.present?
-      @track_data_by_year[year][track_name] += 1 if track_name.present?
+      # Skip podcast episodes / missing data
+      next if uri.blank? || !uri.start_with?("spotify:track:")
+      next if track_name.blank? || artist_name.blank?
 
-      time_played = data["ms_played"]
+      # Aggregate per year → date → artist
+      @artist_data_by_year[year][date_str][artist_name] += 1
+      @track_data_by_year[year][date_str][track_name]   += 1
 
-      if time_played >= 30000
+      # Only insert tracks with enough play time
+      if data["ms_played"].to_i >= 30000
         records_to_insert << {
           track_name: track_name,
           artist_name: artist_name,
           album_name: data["master_metadata_album_album_name"],
-          spotify_track_uri: data["spotify_track_uri"],
+          spotify_track_uri: uri,
           time_stamp: timestamp,
-          time_played: time_played,
+          time_played: data["ms_played"],
           import_id: @import_id,
           created_at: Time.current,
           updated_at: Time.current
         }
       end
 
-      # Bulk insert
+      # Bulk insert when batch is full
       if records_to_insert.size >= batch_size
         ImportedTrackListen.insert_all(records_to_insert)
         records_to_insert.clear
       end
 
-      # Progress update
+      # Progress updates
       if index % batch_size == 0 || index == total_entries - 1
-        current_progress = calculate_progress(json_index, total_json_files, index, total_entries)
-        update_progress(current_progress)
+        update_progress(calculate_progress(json_index, total_json_files, index, total_entries))
       end
     end
 
+    # Insert any remaining rows
     ImportedTrackListen.insert_all(records_to_insert) if records_to_insert.any?
 
   rescue JSON::ParserError => e
@@ -98,22 +103,22 @@ class ImportFileProcessor
   end
 
   def save_bar_chart_data
-    # Write aggregated data EXACTLY ONCE per year
-    @artist_data_by_year.each do |year, artists|
+    # One record per year per race type
+    @artist_data_by_year.each do |year, date_hash|
       BarChartRaceDatum.create!(
         import: @import,
         year: year,
         race_type: "Artists",
-        data: artists
+        data: date_hash
       )
     end
 
-    @track_data_by_year.each do |year, tracks|
+    @track_data_by_year.each do |year, date_hash|
       BarChartRaceDatum.create!(
         import: @import,
         year: year,
         race_type: "Tracks",
-        data: tracks
+        data: date_hash
       )
     end
   end

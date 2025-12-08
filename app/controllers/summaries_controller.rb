@@ -71,14 +71,14 @@ class SummariesController < ApplicationController
     name = params[:name]
     type = params[:type]
 
-    unless %w[artist track].include?(type)
+    unless %w[Artists Tracks].include?(type)
       render json: { error: "Invalid type" }, status: :bad_request and return
     end
 
     race_data = BarChartRaceDatum.find_by(
       import_id: @import.id,
       year: selected_year,
-      race_type: type.capitalize.pluralize # "Artists" or "Tracks"
+      race_type: type # "Artists" or "Tracks"
     )
 
     unless race_data
