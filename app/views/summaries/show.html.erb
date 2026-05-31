@@ -2,25 +2,6 @@
 
 <% content_for :head do %>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <style>
-    body { font-family: Arial, sans-serif; }
-    .container-fluid { display: flex; min-height: 100vh; }
-    .sidebar { width: 200px; background-color: #171717; padding: 20px; margin-top: 30px; border-radius: 8px; }
-    .sidebar h2 { font-size: 1.5rem; margin-bottom: 20px; }
-    .menu-item { padding: 10px 15px; margin-bottom: 5px; cursor: pointer; border-radius: 5px; transition: background-color 0.2s; }
-    .menu-item:hover { background-color: #2A2A2A }
-    .menu-item.active { background-color: #1ed760; color: white; }
-    .content-area { flex: 1; padding: 30px; padding-bottom: 0; }
-    .content-section { display: none; }
-    .content-section.active { display: block; }
-    .tile { padding-top: 20px; padding-bottom: 20px; }
-    .tile h3 { margin-top: 0; }
-    .tile-row { display: flex; gap: 20px; margin-bottom: 20px; }
-    .summary-tile { flex: 1; margin-left: 0; margin-right: 0; width: 60%; }
-    .streaming-stats-tile { flex: 1; margin-left: 0; margin-right: 0; max-width: 40%; align-items: flex-start; text-align: left; }
-    .tile-full { margin-left: 0; margin-right: 0; }
-    ul { list-style-type: none; padding: 0; }
-  </style>
 <% end %>
 
 <script>
@@ -43,15 +24,15 @@
 </script>
 
 <div class="container-fluid">
-  <div class="sidebar">
+  <aside class="sidebar">
     <h2>Summary</h2>
     <div class="menu-item active" data-target="overview">Overview</div>
     <div class="menu-item" data-target="insights">Insights</div>
     <div class="menu-item" data-target="fullvisibility">Full Visibility</div>
-  </div>
+  </aside>
 
   <div class="content-area">
-    <!-- Year Selection at Top -->
+    <!-- Year Selection -->
     <div class="year-selector-top">
       <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort %>
       <% years.each do |year| %>
@@ -72,9 +53,12 @@
                   <li class="list-item">
                     <% if @artist_images[artist].present? %>
                       <img src="<%= @artist_images[artist] %>" alt="<%= artist %>">
+                    <% else %>
+                      <div style="width:40px;height:40px;border-radius:50%;background:var(--bg-2);"></div>
                     <% end %>
                     <div class="text">
-                      <strong><%= artist %></strong>: <%= count %> listens
+                      <strong><%= artist %></strong><br>
+                      <span style="color: var(--ink-mute); font-family: var(--mono); font-size: 11px;"><%= count %> plays</span>
                     </div>
                   </li>
                 <% end %>
@@ -87,9 +71,12 @@
                   <li class="list-item">
                     <% if @track_images[track].present? %>
                       <img src="<%= @track_images[track] %>" alt="<%= track %>">
+                    <% else %>
+                      <div style="width:40px;height:40px;border-radius:4px;background:var(--bg-2);"></div>
                     <% end %>
                     <div class="text">
-                      <strong><%= track %></strong>: <%= count %> listens
+                      <strong><%= track %></strong><br>
+                      <span style="color: var(--ink-mute); font-family: var(--mono); font-size: 11px;"><%= count %> plays</span>
                     </div>
                   </li>
                 <% end %>
@@ -99,37 +86,37 @@
         </div>
 
         <div class="tile streaming-stats-tile">
-          <h3 style="display: flex; align-items: center; gap: 10px;">
-            <%= image_tag 'streamsIcon.png', style: 'width: 50px; height: 50px;' %>
-            Streams: <%= @total_streams %>
-          </h3>
-          <h3 style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;">
-              <%= image_tag 'hourglassIcon.png', style: 'height: 100%; width: auto; margin-right: 8px; margin-left: 8px;' %>
-            </div>
-            Minutes Listened: <%= (@total_streaming_time / 60000).round(0) %>
-          </h3>
-          <h3 style="display: flex; align-items: center; gap: 10px;">
-            <%= image_tag 'artistsIcon.png', style: 'width: 50px; height: 50px;' %>
-            Total Artists: <%= @total_artists %>
-          </h3>
-          <h3 style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;">
-              <%= image_tag 'tracksIcon.png', style: 'height: 100%; width: auto; margin-right: 3px; margin-left: 3px;' %>
-            </div>
-            Total Tracks: <%= @total_tracks %>
-          </h3>
+          <div class="stat-line">
+            <%= image_tag 'streamsIcon.png', alt: 'Streams' %>
+            <span class="stat-label">Streams</span>
+            <span class="stat-value"><%= number_with_delimiter(@total_streams) %></span>
+          </div>
+          <div class="stat-line">
+            <%= image_tag 'hourglassIcon.png', alt: 'Minutes' %>
+            <span class="stat-label">Minutes Listened</span>
+            <span class="stat-value"><%= number_with_delimiter((@total_streaming_time / 60000).round(0)) %></span>
+          </div>
+          <div class="stat-line">
+            <%= image_tag 'artistsIcon.png', alt: 'Artists' %>
+            <span class="stat-label">Total Artists</span>
+            <span class="stat-value"><%= number_with_delimiter(@total_artists) %></span>
+          </div>
+          <div class="stat-line">
+            <%= image_tag 'tracksIcon.png', alt: 'Tracks' %>
+            <span class="stat-label">Total Tracks</span>
+            <span class="stat-value"><%= number_with_delimiter(@total_tracks) %></span>
+          </div>
         </div>
       </div>
 
-      <div class="tile">
+      <div class="tile tile-full">
         <h3>Bar Chart Race</h3>
         <div data-controller="barchart"
              data-barchart-import-id-value="<%= @import.id %>"
              data-barchart-selected-year-value="<%= @selected_year %>"
              data-barchart-race-type-value="Artists">
           <div class="barchart-selection">
-            <button data-action="click->barchart#startRace">Start Bar Chart Race</button>
+            <button data-action="click->barchart#startRace">Start Race</button>
             <select data-action="change->barchart#updateRaceType" name="race_type">
               <option value="Artists">Artists</option>
               <option value="Tracks">Tracks</option>
@@ -141,13 +128,13 @@
       </div>
     </div>
 
+    <!-- Insights Section -->
     <div id="insights" class="content-section">
       <div class="tile">
         <h3>Listening Behavior</h3>
 
-        <!-- Timezone Selector -->
-        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-          <label for="timezone-select" style="margin: 0;">Timezone:</label>
+        <div style="margin-bottom: 22px; display: flex; align-items: center; gap: 10px;">
+          <label for="timezone-select" class="form-label">Timezone</label>
           <select id="timezone-select"
                   data-action="change->hourly-listening#changeTimezone change->daily-listening#changeTimezone"
                   class="form-select form-select-sm w-auto">
@@ -169,22 +156,21 @@
           </select>
         </div>
 
-        <div style="display: flex; gap: 20px;">
+        <div class="insights-charts-row">
           <div data-controller="hourly-listening"
                data-hourly-listening-import-id-value="<%= @import.id %>"
-               data-hourly-listening-selected-year-value="<%= @selected_year %>"
-               style="flex: 1;">
+               data-hourly-listening-selected-year-value="<%= @selected_year %>">
             <div id="hourly-chart"></div>
           </div>
 
           <div data-controller="daily-listening"
                data-daily-listening-import-id-value="<%= @import.id %>"
-               data-daily-listening-selected-year-value="<%= @selected_year %>"
-               style="flex: 1;">
+               data-daily-listening-selected-year-value="<%= @selected_year %>">
             <div id="daily-chart"></div>
           </div>
         </div>
       </div>
+
       <div class="tile">
         <h3>Listening Distribution</h3>
         <div data-controller="streamgraph"
@@ -192,8 +178,8 @@
              data-streamgraph-selected-year-value="<%= @selected_year %>"
              data-streamgraph-race-type-value="Artists">
 
-          <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-            <label for="streamgraph-type-select" style="margin: 0;">Type:</label>
+          <div style="margin-bottom: 22px; display: flex; align-items: center; gap: 10px;">
+            <label for="streamgraph-type-select" class="form-label">Type</label>
             <select id="streamgraph-type-select"
                     data-streamgraph-target="typeSelect"
                     data-action="change->streamgraph#changeType"
@@ -203,7 +189,14 @@
             </select>
           </div>
 
-          <svg data-streamgraph-target="svg" id="streamGraph" width="900" height="500"></svg>
+          <div style="display: flex; gap: 22px; flex-wrap: wrap;">
+            <svg data-streamgraph-target="svg" id="streamGraph" width="900" height="500" style="flex: 1; min-width: 0;"></svg>
+
+            <div style="width: 260px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 16px; max-height: 500px; overflow-y: auto;">
+              <h4 style="margin: 0 0 14px; font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute);">Add / Remove</h4>
+              <div data-streamgraph-target="entityList"></div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -216,25 +209,22 @@
             data-heatmap-import-id-value="<%= @import.id %>"
             data-heatmap-initial-year-value="<%= @selected_year %>">
 
-          <!-- Type Selector -->
-          <div class="heatmap-controls mb-3" style="display: flex; justify-content: center; align-items: center; gap: 1rem;">
-            <label class="form-label" style="margin: 0;">Type:</label>
+          <div class="heatmap-controls">
+            <label class="form-label">Type</label>
             <select id="entityType" class="form-select form-select-sm w-auto">
               <option value="Artists">Artist</option>
               <option value="Tracks">Track</option>
             </select>
 
-            <!-- Search Input -->
-            <label for="entitySearch" class="form-label" style="margin: 0;">Search:</label>
+            <label for="entitySearch" class="form-label">Search</label>
             <input type="text"
                   id="entitySearch"
                   class="form-control form-control-sm"
-                  placeholder="Start typing artist or track..."
-                  style="width: 250px;">
+                  placeholder="Type artist or track name…"
+                  style="width: 260px;">
           </div>
 
-          <!-- Grid container -->
-          <div id="heatmap-grid" style="margin-top: 20px;"></div>
+          <div id="heatmap-grid" style="margin-top: 18px; overflow-x: auto;"></div>
         </div>
       </div>
 
@@ -243,7 +233,7 @@
         <div data-controller="tree"
              data-tree-import-id-value="<%= @import.id %>"
              data-tree-selected-year-value="<%= @selected_year %>">
-          <div id="tree-container" style="width: 100%; min-width: 800px; height: 300px; margin-bottom: 1rem; overflow: auto;"></div>
+          <div id="tree-container" style="width: 100%; min-width: 800px; height: 320px; margin-bottom: 8px; overflow: auto;"></div>
         </div>
       </div>
     </div>

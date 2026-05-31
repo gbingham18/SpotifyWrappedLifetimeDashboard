@@ -1,10 +1,35 @@
 <div class="tile" id="upload-tile">
-  <h2>Upload Spotify Streaming History</h2>
-  <%= render 'form' %>
-  <div id="progress-container" style="display:none; width: 80%; height: 40px; border: 1px solid #ddd;">
-    <div id="progress-bar" style="width:0%; height: 100%; background-color: #4CAF50;"></div>
+  <div style="display:flex; align-items:center; gap:10px; margin-bottom: 4px;">
+    <div style="width:18px; height:18px; border-radius:50%; background:var(--accent);"></div>
+    <span style="font-family: var(--sans); font-size: 13px; font-weight: 600; letter-spacing: 0.04em;">Replay</span>
   </div>
-  <div id="progress-text" style="margin-top: 8px; margin-bottom: 8px;"></div>
+
+  <h2>Upload your Spotify streaming history</h2>
+  <p class="upload-lede">
+    Drop your Spotify data export below. We'll process it locally and build a lifetime view of every play.
+  </p>
+
+  <%= render 'form' %>
+
+  <div id="progress-container" style="display:none;">
+    <div id="progress-bar"></div>
+  </div>
+  <div id="progress-text"></div>
+
+  <div class="upload-steps">
+    <div class="upload-step">
+      <div class="upload-step-num">01</div>
+      <div class="upload-step-text">Visit <strong>spotify.com/account/privacy</strong> and request your extended streaming history.</div>
+    </div>
+    <div class="upload-step">
+      <div class="upload-step-num">02</div>
+      <div class="upload-step-text">Spotify emails you a zip file within a few days.</div>
+    </div>
+    <div class="upload-step">
+      <div class="upload-step-num">03</div>
+      <div class="upload-step-text">Drop the zip above. Everything is processed locally.</div>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -26,7 +51,7 @@
           uploadButton.style.display = "none";
         } else {
           uploadButton.disabled = false;
-          uploadButton.style.display = "flex";
+          uploadButton.style.display = "inline-flex";
         }
       });
 
@@ -38,7 +63,7 @@
         uploadButton.disabled = true;
         progressContainer.style.display = "block";
         form.style.marginBottom = "0";
-        progressText.innerText = "Uploading and processing file...";
+        progressText.innerText = "Uploading and processing file…";
 
         fetch(form.action, {
           method: "POST",
@@ -61,22 +86,18 @@
 
     function startPolling(importId) {
       pollingInterval = setInterval(() => {
-        console.log("Polling import progress...");
         fetch(`/imports/${importId}/status`)
           .then(res => res.json())
           .then(data => {
             const progress = data.progress || 0;
-            console.log("here2")
-            console.log(progress)
             progressContainer.style.display = "block";
 
             progressBar.style.width = `${progress}%`;
-            progressText.innerText = `Processing... ${progress}%`;
-            progressBar.offsetWidth;
+            progressText.innerText = `Processing… ${progress}%`;
 
             if (progress >= 100) {
               clearInterval(pollingInterval);
-              progressText.innerText = "Import complete! Redirecting...";
+              progressText.innerText = "Import complete — redirecting…";
               setTimeout(() => {
                 window.location.href = `/imports/${importId}/summary`;
               }, 100);
@@ -89,4 +110,3 @@
     }
   });
 </script>
-

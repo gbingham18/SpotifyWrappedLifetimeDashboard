@@ -1,5 +1,12 @@
 import { Controller } from "@hotwired/stimulus"
 
+// Resolves a CSS custom property defined on :root, with a fallback.
+function token(name, fallback) {
+  if (typeof getComputedStyle !== "function") return fallback
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return v || fallback
+}
+
 export default class extends Controller {
   static values = {
     importId: Number,
@@ -56,71 +63,67 @@ export default class extends Controller {
     }
   }
 
+  styleNavButton(btn, disabled = false) {
+    btn.style.backgroundColor = "transparent"
+    btn.style.color = token("--ink-soft", "#C9C0AB")
+    btn.style.border = `1px solid ${token("--line", "#2A2620")}`
+    btn.style.borderRadius = "100px"
+    btn.style.cursor = "pointer"
+    btn.style.fontFamily = "var(--sans)"
+    btn.style.fontSize = "13px"
+    btn.style.fontWeight = "500"
+    btn.style.padding = "6px 14px"
+    btn.style.transition = "all 120ms"
+    btn.style.opacity = disabled ? "0.35" : "1"
+  }
+
   renderTree() {
     const container = document.getElementById("tree-container")
     container.innerHTML = ""
 
-    // Create back button (only show if we're drilled down)
+    const accent = token("--accent", "#E0723F")
+    const ink = token("--ink", "#F2EDDF")
+    const inkSoft = token("--ink-soft", "#C9C0AB")
+    const line = token("--line", "#2A2620")
+    const lineSoft = token("--line-soft", "#1F1C17")
+
+    // Back button (only when drilled in)
     if (this.navigationStack.length > 0) {
       const backDiv = document.createElement("div")
       backDiv.style.display = "flex"
-      backDiv.style.justifyContent = "center"
-      backDiv.style.marginBottom = "20px"
+      backDiv.style.justifyContent = "flex-start"
+      backDiv.style.marginBottom = "16px"
 
       const backButton = document.createElement("button")
-      backButton.textContent = "⬆ Back"
-      backButton.style.backgroundColor = "#1ed760"
-      backButton.style.color = "white"
-      backButton.style.border = "none"
-      backButton.style.borderRadius = "5px"
-      backButton.style.cursor = "pointer"
+      backButton.textContent = "← Back"
+      this.styleNavButton(backButton, false)
       backButton.addEventListener("click", () => this.goBack())
       backDiv.appendChild(backButton)
       container.appendChild(backDiv)
     }
 
-    // Create container for tree with side navigation
     const treeWrapper = document.createElement("div")
     treeWrapper.style.display = "flex"
     treeWrapper.style.alignItems = "center"
     treeWrapper.style.justifyContent = "center"
-    treeWrapper.style.gap = "0px"
+    treeWrapper.style.gap = "12px"
 
     const maxIndex = this.currentNode.children.length - this.itemsPerPage
 
-    // Left chevron
     const prevButton = document.createElement("button")
     prevButton.textContent = "◀"
-    prevButton.style.backgroundColor = "#1ed760"
-    prevButton.style.color = "white"
-    prevButton.style.border = "none"
-    prevButton.style.borderRadius = "5px"
-    prevButton.style.cursor = "pointer"
-    prevButton.style.fontSize = "20px"
+    this.styleNavButton(prevButton, this.currentIndex === 0)
     prevButton.disabled = this.currentIndex === 0
-    if (prevButton.disabled) {
-      prevButton.style.opacity = "0.3"
-    }
     prevButton.addEventListener("click", () => this.prevPage())
 
-    // Tree container div
     const treeDiv = document.createElement("div")
     treeDiv.id = "tree-svg-container"
     treeDiv.style.flex = "1"
 
-    // Right chevron
     const nextButton = document.createElement("button")
     nextButton.textContent = "▶"
-    nextButton.style.backgroundColor = "#1ed760"
-    nextButton.style.color = "white"
-    nextButton.style.border = "none"
-    nextButton.style.borderRadius = "5px"
-    nextButton.style.cursor = "pointer"
-    nextButton.style.fontSize = "20px"
+    this.styleNavButton(nextButton, this.currentIndex >= maxIndex)
     nextButton.disabled = this.currentIndex >= maxIndex
-    if (nextButton.disabled) {
-      nextButton.style.opacity = "0.3"
-    }
     nextButton.addEventListener("click", () => this.nextPage())
 
     treeWrapper.appendChild(prevButton)
@@ -128,21 +131,23 @@ export default class extends Controller {
     treeWrapper.appendChild(nextButton)
     container.appendChild(treeWrapper)
 
-    // Page info below tree
     const pageInfo = document.createElement("div")
-    pageInfo.style.color = "#E0E0E0"
+    pageInfo.style.color = inkSoft
     pageInfo.style.textAlign = "center"
-    pageInfo.style.marginTop = "20px"
+    pageInfo.style.marginTop = "16px"
+    pageInfo.style.fontFamily = "var(--mono)"
+    pageInfo.style.fontSize = "11px"
+    pageInfo.style.letterSpacing = "0.04em"
     container.appendChild(pageInfo)
 
-    // Get current page of children (only show immediate children, not grandchildren)
+    // Page slice (immediate children only)
     const startIdx = this.currentIndex
     const endIdx = startIdx + this.itemsPerPage
     const pageChildren = this.currentNode.children.slice(startIdx, endIdx).map(child => ({
       name: child.name,
       value: child.value,
-      children: [], // Don't show grandchildren
-      _originalData: child // Store original data for drill-down
+      children: [],
+      _originalData: child
     }))
 
     const pageData = {
@@ -165,29 +170,22 @@ export default class extends Controller {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
 
-    const treeLayout = d3.tree()
-      .size([width, height])
-
+    const treeLayout = d3.tree().size([width, height])
     const root = d3.hierarchy(pageData)
     treeLayout(root)
 
-    // Draw links (lines connecting nodes)
     svg.selectAll(".link")
       .data(root.links())
       .enter()
       .append("path")
       .attr("class", "link")
-      .attr("d", d3.linkVertical()
-        .x(d => d.x)
-        .y(d => d.y))
+      .attr("d", d3.linkVertical().x(d => d.x).y(d => d.y))
       .attr("fill", "none")
-      .attr("stroke", "#555")
-      .attr("stroke-width", 2)
+      .attr("stroke", line)
+      .attr("stroke-width", 1)
 
-    // Calculate max value among ALL children (not just current page) for proportional sizing
     const maxChildValue = d3.max(this.currentNode.children || [], d => d.value) || 1
 
-    // Draw nodes
     const nodes = svg.selectAll(".node")
       .data(root.descendants())
       .enter()
@@ -196,45 +194,43 @@ export default class extends Controller {
       .attr("transform", d => `translate(${d.x},${d.y})`)
       .style("cursor", d => d.depth === 1 && d.data._originalData?.children?.length > 0 ? "pointer" : "default")
       .on("click", (event, d) => {
-        // Only allow drilling down on level 1 nodes (artists) that have children
         if (d.depth === 1 && d.data._originalData?.children?.length > 0) {
           this.drillDown(d.data._originalData)
         }
       })
 
-    // Add bars for nodes
     const barWidth = 60
-    const barHeight = 20
+    const barHeight = 16
 
-    // Add background bar (unfilled portion)
+    // Background bar (track)
     nodes.append("rect")
       .attr("x", -barWidth / 2)
       .attr("y", -barHeight / 2)
       .attr("width", barWidth)
       .attr("height", barHeight)
-      .attr("fill", "#2A2A2A")
-      .attr("stroke-width", 2)
-      .attr("rx", 3)
+      .attr("fill", lineSoft)
+      .attr("rx", 2)
 
-    // Add filled bar (proportional to value)
+    // Filled bar (accent)
     nodes.append("rect")
       .attr("x", -barWidth / 2)
       .attr("y", -barHeight / 2)
       .attr("width", d => {
-        if (d.depth === 0) return barWidth // Parent is 100% filled
-        return (d.data.value / maxChildValue) * barWidth // Children proportional to max child
+        if (d.depth === 0) return barWidth
+        return (d.data.value / maxChildValue) * barWidth
       })
       .attr("height", barHeight)
-      .attr("fill", "#1ed760")
-      .attr("rx", 3)
+      .attr("fill", accent)
+      .attr("rx", 2)
 
-    // Add labels
+    // Labels
     nodes.append("text")
       .attr("dy", -12)
       .attr("text-anchor", "middle")
-      .style("fill", "#E0E0E0")
+      .style("fill", ink)
+      .style("font-family", "var(--sans)")
       .style("font-size", "11px")
-      .style("font-weight", d => d.depth === 0 ? "bold" : "normal")
+      .style("font-weight", d => d.depth === 0 ? "600" : "500")
       .text(d => {
         const name = d.data.name.length > 25 ? d.data.name.substring(0, 25) + "..." : d.data.name
         return `${name}: ${d.data.value}`

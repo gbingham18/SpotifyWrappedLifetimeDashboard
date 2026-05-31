@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+function token(name, fallback) {
+  if (typeof getComputedStyle !== "function") return fallback
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return v || fallback
+}
+
 export default class extends Controller {
   static targets = ["svg"]
 
@@ -10,9 +16,10 @@ export default class extends Controller {
   }
 
   connect() {
+    // Slightly desaturated palette so bars feel cohesive against the warm dark UI
     this.barColors = [
-      '#FF4C4C', '#4FC3F7', '#FFD700', '#A080FF', '#FF914D',
-      '#A6FF4D', '#4DFFDF', '#FF66B2', '#F0F0F0', '#3FA9F5'
+      '#E0723F', '#D6A24E', '#A8B468', '#6FA88F', '#7E89B0',
+      '#A47AB0', '#D77E9E', '#C2935A', '#E08A6F', '#5E8FA8'
     ]
     this.lookupColorByArtistName = new Map()
     this.usedColors = new Set()
@@ -41,47 +48,43 @@ export default class extends Controller {
     svg.selectAll("*").remove()
 
     const { width, height, chartWidth, chartHeight } = this.getChartDimensions()
+    const bg2 = token("--bg-2", "#15130F")
+    const line = token("--line", "#2A2620")
+    const ink = token("--ink", "#F2EDDF")
 
-    // Set SVG dimensions explicitly
     svg.attr("width", width).attr("height", height)
 
     const g = svg.append("g").attr("transform", `translate(-150,40)`)
 
-    // Add background rectangle to g
     g.append("rect")
       .attr("class", "background")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", chartWidth)
-      .attr("height", chartHeight)
-      .attr("fill", "#2A2A2A")
+      .attr("x", 0).attr("y", 0)
+      .attr("width", chartWidth).attr("height", chartHeight)
+      .attr("fill", bg2)
 
-    // Add dividing lines (fifths)
     const sectionWidth = chartWidth / 5
     for (let i = 1; i < 5; i++) {
       g.append("line")
         .attr("class", "divider")
-        .attr("x1", i * sectionWidth)
-        .attr("y1", 0)
-        .attr("x2", i * sectionWidth)
-        .attr("y2", chartHeight)
-        .attr("stroke", "#444")
+        .attr("x1", i * sectionWidth).attr("y1", 0)
+        .attr("x2", i * sectionWidth).attr("y2", chartHeight)
+        .attr("stroke", line)
         .attr("stroke-width", 1)
     }
 
     const x = d3.scaleLinear().range([0, chartWidth])
-    const y = d3.scaleBand().range([0, chartHeight]).padding(0.1)
+    const y = d3.scaleBand().range([0, chartHeight]).padding(0.18)
     const title = this.createTitle(svg, width)
 
-    // Add date display in lower right
     const dateDisplay = g.append("text")
       .attr("class", "date-display")
       .attr("x", chartWidth - 10)
-      .attr("y", chartHeight - 10)
+      .attr("y", chartHeight - 14)
       .attr("text-anchor", "end")
-      .style("font-size", "24px")
-      .style("fill", "#E0E0E0")
-      .style("font-weight", "bold")
+      .style("font-family", "var(--sans)")
+      .style("font-size", "22px")
+      .style("font-weight", "600")
+      .style("fill", ink)
 
     const dates = Object.keys(data).sort()
     const dataByDate = dates.map(date => data[date])
@@ -90,7 +93,6 @@ export default class extends Controller {
   }
 
   getChartDimensions() {
-    // Find the .tile container
     const tileContainer = this.element.closest('.tile')
     const width = tileContainer ? tileContainer.clientWidth : 1000
     const height = 600
@@ -106,9 +108,12 @@ export default class extends Controller {
   createTitle(svg, width) {
     return svg.append("text")
       .attr("x", (width / 2) - 240)
-      .attr("y", 20)
+      .attr("y", 22)
       .attr("text-anchor", "middle")
-      .style("font-size", "20px")
+      .style("font-family", "var(--sans)")
+      .style("font-size", "14px")
+      .style("font-weight", "500")
+      .style("fill", token("--ink-mute", "#847C6B"))
   }
 
   runAnimation(svg, g, x, y, title, dateDisplay, dates, dataByDate) {
@@ -151,9 +156,8 @@ export default class extends Controller {
     x.domain([0, d3.max(values)])
     y.domain(labels)
 
-    title.text(`Top 10 ${this.raceTypeValue} (Cumulative) - ${this.selectedYearValue}`)
+    title.text(`Top 10 ${this.raceTypeValue} — Cumulative ${this.selectedYearValue}`)
 
-    // Update date display (remove year)
     const dateObj = new Date(date)
     const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     dateDisplay.text(formattedDate)
@@ -188,7 +192,6 @@ export default class extends Controller {
       const yPos = y(name)
       if (yPos === undefined) return
 
-      // Show placeholder first
       const defaultImage = "/assets/DefaultArtistPfp.png"
       this.appendImage(imageGroup, defaultImage, yPos, name)
 
@@ -222,7 +225,6 @@ export default class extends Controller {
   }
 
   updateImage(imageGroup, imageUrl, yPos, name) {
-    // Remove existing image for this name
     imageGroup.selectAll(`[data-name="${name}"]`).remove()
     this.appendImage(imageGroup, imageUrl, yPos, name)
   }
@@ -237,6 +239,7 @@ export default class extends Controller {
       .attr("height", y.bandwidth())
       .attr("x", 0)
       .attr("width", d => x(d[1].count))
+      .attr("rx", 3)
       .attr("fill", d => this.lookupColorByArtistName.get(d[0]))
       .merge(bars)
       .transition()
@@ -257,6 +260,9 @@ export default class extends Controller {
       .attr("class", "label")
       .attr("y", d => y(d[0]) + y.bandwidth() / 2)
       .attr("dy", ".35em")
+      .style("font-family", "var(--sans)")
+      .style("font-size", "12px")
+      .style("font-weight", "600")
 
     labelEnter.merge(labelsSel)
       .transition()
@@ -265,7 +271,6 @@ export default class extends Controller {
       .attr("x", d => x(d[1].count) - 5)
       .each((d, i, nodes) => {
         let label = `${d[0]}`
-        // Truncate long labels to 40 characters
         if (label.length > 40) {
           label = label.substring(0, 40) + "..."
         }
@@ -286,13 +291,13 @@ export default class extends Controller {
           .attr("text-anchor", isTooWide ? "start" : "end")
           .attr("x", isTooWide ? barWidth + 5 : barWidth - 5)
 
-        lines.forEach((line, i) => {
+        lines.forEach((line, j) => {
           textEl.append("tspan")
             .text(line)
             .attr("x", isTooWide ? barWidth + 5 : barWidth - 5)
-            .attr("dy", i === 0 ? 0 : "1.1em")
+            .attr("dy", j === 0 ? 0 : "1.1em")
             .attr("text-anchor", isTooWide ? "start" : "end")
-            .attr("fill", "#2a2a2a")
+            .attr("fill", isTooWide ? token("--ink", "#F2EDDF") : "#1A0E07")
         })
       })
 
@@ -340,38 +345,34 @@ export default class extends Controller {
     svg.selectAll("*").remove()
 
     const { width, height, chartWidth, chartHeight } = this.getChartDimensions()
+    const bg2 = token("--bg-2", "#15130F")
+    const line = token("--line", "#2A2620")
+
     svg.attr("width", width).attr("height", height)
 
     const g = svg.append("g").attr("transform", `translate(-150,40)`)
 
-    // Add background rectangle
     g.append("rect")
       .attr("class", "background")
-      .attr("x", 0)
-      .attr("y", 0)
-      .attr("width", chartWidth)
-      .attr("height", chartHeight)
-      .attr("fill", "#2A2A2A")
+      .attr("x", 0).attr("y", 0)
+      .attr("width", chartWidth).attr("height", chartHeight)
+      .attr("fill", bg2)
 
-    // Add dividing lines (fifths)
     const sectionWidth = chartWidth / 5
     for (let i = 1; i < 5; i++) {
       g.append("line")
         .attr("class", "divider")
-        .attr("x1", i * sectionWidth)
-        .attr("y1", 0)
-        .attr("x2", i * sectionWidth)
-        .attr("y2", chartHeight)
-        .attr("stroke", "#444")
+        .attr("x1", i * sectionWidth).attr("y1", 0)
+        .attr("x2", i * sectionWidth).attr("y2", chartHeight)
+        .attr("stroke", line)
         .attr("stroke-width", 1)
     }
 
     const y = d3.scaleBand()
       .range([0, chartHeight])
       .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
-      .padding(0.1)
+      .padding(0.18)
 
-    // Add default images
     const imageGroup = svg.append("g").attr("id", "barChartImages")
     const defaultImage = "/assets/DefaultArtistPfp.png"
 
@@ -386,12 +387,14 @@ export default class extends Controller {
         .attr("clip-path", "circle(20px at 20px 20px)")
     }
 
-    // Add title
-    const title = svg.append("text")
+    svg.append("text")
       .attr("x", (width / 2) - 240)
-      .attr("y", 20)
+      .attr("y", 22)
       .attr("text-anchor", "middle")
-      .style("font-size", "20px")
-      .text(`Top 10 ${this.raceTypeValue} (Cumulative) – ${this.selectedYearValue}`)
+      .style("font-family", "var(--sans)")
+      .style("font-size", "14px")
+      .style("font-weight", "500")
+      .style("fill", token("--ink-mute", "#847C6B"))
+      .text(`Press Start Race to animate Top 10 ${this.raceTypeValue} for ${this.selectedYearValue}`)
   }
 }

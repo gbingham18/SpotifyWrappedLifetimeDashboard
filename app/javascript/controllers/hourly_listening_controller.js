@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+function token(name, fallback) {
+  if (typeof getComputedStyle !== "function") return fallback
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return v || fallback
+}
+
 export default class extends Controller {
   static values = {
     importId: Number,
@@ -36,8 +42,14 @@ export default class extends Controller {
     const height = 400
     const margin = { top: 20, right: 20, bottom: 60, left: 60 }
 
-    // Clear any existing content
     container.innerHTML = ""
+
+    const accent = token("--accent", "#E0723F")
+    const accentSoft = token("--accent-soft", "#6B3520")
+    const ink = token("--ink", "#F2EDDF")
+    const inkMute = token("--ink-mute", "#847C6B")
+    const inkFaint = token("--ink-faint", "#54503F")
+    const line = token("--line", "#2A2620")
 
     const svg = d3.select(container)
       .append("svg")
@@ -54,23 +66,17 @@ export default class extends Controller {
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
 
-    // Create scales
     const xScale = d3.scaleBand()
       .domain(d3.range(24))
       .range([0, chartWidth])
-      .padding(0.1)
+      .padding(0.18)
 
     const yScale = d3.scaleLinear()
       .domain([0, d3.max(data)])
       .nice()
       .range([chartHeight, 0])
 
-    // Create color scale based on intensity
-    const colorScale = d3.scaleSequential()
-      .domain([0, d3.max(data)])
-      .interpolator(d3.interpolateRgb("#1ed760", "#1db954"))
-
-    // Add bars
+    // Single-accent bars: dim early-AM hours
     g.selectAll(".bar")
       .data(data)
       .enter()
@@ -80,11 +86,9 @@ export default class extends Controller {
       .attr("y", d => yScale(d))
       .attr("width", xScale.bandwidth())
       .attr("height", d => chartHeight - yScale(d))
-      .attr("fill", d => colorScale(d))
-      .attr("rx", 4)
+      .attr("fill", (d, i) => (i < 6 || i > 22) ? inkFaint : accent)
+      .attr("rx", 2)
 
-
-    // Add X axis
     const xAxis = d3.axisBottom(xScale)
       .tickFormat(d => {
         if (d === 0) return "12 AM"
@@ -97,36 +101,32 @@ export default class extends Controller {
       .attr("transform", `translate(0,${chartHeight})`)
       .call(xAxis)
       .selectAll("text")
-      .attr("fill", "#fff")
+      .attr("fill", inkMute)
+      .style("font-family", "var(--mono)")
+      .style("font-size", "10px")
       .attr("transform", "rotate(-45)")
       .style("text-anchor", "end")
 
-    // Add Y axis
     g.append("g")
-      .call(d3.axisLeft(yScale))
+      .call(d3.axisLeft(yScale).ticks(5))
       .selectAll("text")
-      .attr("fill", "#fff")
+      .attr("fill", inkMute)
+      .style("font-family", "var(--mono)")
+      .style("font-size", "10px")
 
-    // Style axis lines
-    g.selectAll(".domain, .tick line")
-      .attr("stroke", "#666")
+    g.selectAll(".domain")
+      .attr("stroke", line)
+    g.selectAll(".tick line")
+      .attr("stroke", line)
 
-    // Add Y axis label
     svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 15)
       .attr("x", -(height / 2))
       .attr("text-anchor", "middle")
-      .attr("fill", "#fff")
-      .attr("font-size", "14px")
-      .text("Number of Streams")
-
-    // Add X axis label
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", height - 5)
-      .attr("text-anchor", "middle")
-      .attr("fill", "#fff")
-      .attr("font-size", "14px")
+      .attr("fill", inkMute)
+      .style("font-family", "var(--sans)")
+      .attr("font-size", "11px")
+      .text("Streams")
   }
 }

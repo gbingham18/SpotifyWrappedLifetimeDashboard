@@ -1,5 +1,11 @@
 import { Controller } from "@hotwired/stimulus"
 
+function token(name, fallback) {
+  if (typeof getComputedStyle !== "function") return fallback
+  const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+  return v || fallback
+}
+
 export default class extends Controller {
   static values = {
     importId: Number,
@@ -36,8 +42,11 @@ export default class extends Controller {
     const height = 400
     const margin = { top: 20, right: 20, bottom: 60, left: 60 }
 
-    // Clear any existing content
     container.innerHTML = ""
+
+    const accent = token("--accent", "#E0723F")
+    const inkMute = token("--ink-mute", "#847C6B")
+    const line = token("--line", "#2A2620")
 
     const svg = d3.select(container)
       .append("svg")
@@ -56,23 +65,16 @@ export default class extends Controller {
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
-    // Create scales
     const xScale = d3.scaleBand()
       .domain(d3.range(7))
       .range([0, chartWidth])
-      .padding(0.1)
+      .padding(0.25)
 
     const yScale = d3.scaleLinear()
       .domain([0, d3.max(data)])
       .nice()
       .range([chartHeight, 0])
 
-    // Create color scale based on intensity
-    const colorScale = d3.scaleSequential()
-      .domain([0, d3.max(data)])
-      .interpolator(d3.interpolateRgb("#1ed760", "#1db954"))
-
-    // Add bars
     g.selectAll(".bar")
       .data(data)
       .enter()
@@ -82,46 +84,37 @@ export default class extends Controller {
       .attr("y", d => yScale(d))
       .attr("width", xScale.bandwidth())
       .attr("height", d => chartHeight - yScale(d))
-      .attr("fill", d => colorScale(d))
-      .attr("rx", 4)
+      .attr("fill", accent)
+      .attr("rx", 2)
 
-
-    // Add X axis
-    const xAxis = d3.axisBottom(xScale)
-      .tickFormat(d => days[d])
+    const xAxis = d3.axisBottom(xScale).tickFormat(d => days[d])
 
     g.append("g")
       .attr("transform", `translate(0,${chartHeight})`)
       .call(xAxis)
       .selectAll("text")
-      .attr("fill", "#fff")
+      .attr("fill", inkMute)
+      .style("font-family", "var(--mono)")
+      .style("font-size", "10px")
 
-    // Add Y axis
     g.append("g")
-      .call(d3.axisLeft(yScale))
+      .call(d3.axisLeft(yScale).ticks(5))
       .selectAll("text")
-      .attr("fill", "#fff")
+      .attr("fill", inkMute)
+      .style("font-family", "var(--mono)")
+      .style("font-size", "10px")
 
-    // Style axis lines
-    g.selectAll(".domain, .tick line")
-      .attr("stroke", "#666")
+    g.selectAll(".domain").attr("stroke", line)
+    g.selectAll(".tick line").attr("stroke", line)
 
-    // Add Y axis label
     svg.append("text")
       .attr("transform", "rotate(-90)")
       .attr("y", 15)
       .attr("x", -(height / 2))
       .attr("text-anchor", "middle")
-      .attr("fill", "#fff")
-      .attr("font-size", "14px")
-      .text("Number of Streams")
-
-    // Add X axis label
-    svg.append("text")
-      .attr("x", width / 2)
-      .attr("y", height - 5)
-      .attr("text-anchor", "middle")
-      .attr("fill", "#fff")
-      .attr("font-size", "14px")
+      .attr("fill", inkMute)
+      .style("font-family", "var(--sans)")
+      .attr("font-size", "11px")
+      .text("Streams")
   }
 }
