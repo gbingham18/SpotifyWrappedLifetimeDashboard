@@ -43,69 +43,66 @@
 
     <!-- Overview Section -->
     <div id="overview" class="content-section active">
+      <div class="stats-row">
+        <div class="tile stat-card">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
+          <span class="stat-value"><%= number_with_delimiter(@total_streams) %></span>
+          <span class="stat-label">Streams</span>
+        </div>
+        <div class="tile stat-card">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+          <span class="stat-value"><%= number_with_delimiter((@total_streaming_time / 60000).round(0)) %></span>
+          <span class="stat-label">Minutes Listened</span>
+        </div>
+        <div class="tile stat-card">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="stat-value"><%= number_with_delimiter(@total_artists) %></span>
+          <span class="stat-label">Total Artists</span>
+        </div>
+        <div class="tile stat-card">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span class="stat-value"><%= number_with_delimiter(@total_tracks) %></span>
+          <span class="stat-label">Total Tracks</span>
+        </div>
+      </div>
+
       <div class="tile-row">
-        <div class="tile summary-tile">
-          <div class="summary-section">
-            <div class="top-artists">
-              <h3>Top Artists</h3>
-              <ol class="summary-list">
-                <% @top_artists.each do |artist, count| %>
-                  <li class="list-item">
-                    <% if @artist_images[artist].present? %>
-                      <img src="<%= @artist_images[artist] %>" alt="<%= artist %>">
-                    <% else %>
-                      <div style="width:40px;height:40px;border-radius:50%;background:var(--bg-2);"></div>
-                    <% end %>
-                    <div class="text">
-                      <strong><%= artist %></strong><br>
-                      <span style="color: var(--ink-mute); font-family: var(--mono); font-size: 11px;"><%= count %> plays</span>
-                    </div>
-                  </li>
+        <div class="tile top-artists">
+          <h3>Top Artists</h3>
+          <ol class="summary-list">
+            <% @top_artists.each do |artist, count| %>
+              <li class="list-item">
+                <% if @artist_images[artist].present? %>
+                  <img src="<%= @artist_images[artist] %>" alt="<%= artist %>">
+                <% else %>
+                  <div style="width:40px;height:40px;border-radius:50%;background:var(--bg-2);"></div>
                 <% end %>
-              </ol>
-            </div>
-            <div class="top-tracks">
-              <h3>Top Tracks</h3>
-              <ol>
-                <% @top_tracks.each do |track, id, count| %>
-                  <li class="list-item">
-                    <% if @track_images[track].present? %>
-                      <img src="<%= @track_images[track] %>" alt="<%= track %>">
-                    <% else %>
-                      <div style="width:40px;height:40px;border-radius:4px;background:var(--bg-2);"></div>
-                    <% end %>
-                    <div class="text">
-                      <strong><%= track %></strong><br>
-                      <span style="color: var(--ink-mute); font-family: var(--mono); font-size: 11px;"><%= count %> plays</span>
-                    </div>
-                  </li>
-                <% end %>
-              </ol>
-            </div>
-          </div>
+                <div class="text">
+                  <strong><%= artist %></strong><br>
+                  <span style="color: var(--ink-mute); font-family: var(--mono); font-size: 11px;"><%= count %> plays</span>
+                </div>
+              </li>
+            <% end %>
+          </ol>
         </div>
 
-        <div class="tile streaming-stats-tile">
-          <div class="stat-line">
-            <%= image_tag 'streamsIcon.png', alt: 'Streams' %>
-            <span class="stat-label">Streams</span>
-            <span class="stat-value"><%= number_with_delimiter(@total_streams) %></span>
-          </div>
-          <div class="stat-line">
-            <%= image_tag 'hourglassIcon.png', alt: 'Minutes' %>
-            <span class="stat-label">Minutes Listened</span>
-            <span class="stat-value"><%= number_with_delimiter((@total_streaming_time / 60000).round(0)) %></span>
-          </div>
-          <div class="stat-line">
-            <%= image_tag 'artistsIcon.png', alt: 'Artists' %>
-            <span class="stat-label">Total Artists</span>
-            <span class="stat-value"><%= number_with_delimiter(@total_artists) %></span>
-          </div>
-          <div class="stat-line">
-            <%= image_tag 'tracksIcon.png', alt: 'Tracks' %>
-            <span class="stat-label">Total Tracks</span>
-            <span class="stat-value"><%= number_with_delimiter(@total_tracks) %></span>
-          </div>
+        <div class="tile top-tracks">
+          <h3>Top Tracks</h3>
+          <ol>
+            <% @top_tracks.each do |track, id, count| %>
+              <li class="list-item">
+                <% if @track_images[track].present? %>
+                  <img src="<%= @track_images[track] %>" alt="<%= track %>">
+                <% else %>
+                  <div style="width:40px;height:40px;border-radius:4px;background:var(--bg-2);"></div>
+                <% end %>
+                <div class="text">
+                  <strong><%= track %></strong><br>
+                  <span style="color: var(--ink-mute); font-family: var(--mono); font-size: 11px;"><%= count %> plays</span>
+                </div>
+              </li>
+            <% end %>
+          </ol>
         </div>
       </div>
 

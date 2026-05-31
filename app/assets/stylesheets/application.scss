@@ -198,20 +198,31 @@ h1, h2, h3, h4 { font-family: var(--sans); letter-spacing: -0.005em; }
   }
 }
 
-.tile-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+.stat-card {
+  aspect-ratio: 1;
+  padding: var(--pad);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.tile-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); margin-bottom: var(--gap); }
 .tile-full { width: 100%; }
 
 /* ============ SUMMARY (top artists/tracks) ============ */
-.summary-tile { padding: var(--pad); }
-.summary-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
-  margin: 0;
-}
-
 .top-artists,
 .top-tracks {
+  padding: var(--pad);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -274,57 +285,26 @@ ol, .summary-list, .top-tracks ol {
 .top-artists .list-item img { border-radius: 50%; }
 
 /* ============ STREAMING STATS ============ */
-.streaming-stats-tile {
-  padding: var(--pad);
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+.stat-icon {
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+}
 
-  h3 {
-    margin: 0;
-    font-size: 14px;
-    color: var(--ink-soft);
-    font-weight: 400;
-    display: grid !important;
-    grid-template-columns: 36px 1fr;
-    align-items: center;
-    gap: 12px !important;
+.stat-card .stat-value {
+  font-family: var(--sans);
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  font-feature-settings: "tnum", "lnum";
+}
 
-    /* image is replaced by an icon wrapper */
-    img {
-      width: 22px !important;
-      height: 22px !important;
-      filter: brightness(0) saturate(100%) invert(56%) sepia(74%) saturate(382%) hue-rotate(346deg) brightness(94%) contrast(89%);
-    }
-
-    /* Number — last span in the h3 */
-    &::after {
-      display: none;
-    }
-  }
-
-  /* The "Streams: 11308" text — use a span helper or style direct text-bold */
-  .stat-line {
-    display: grid;
-    grid-template-columns: 32px 1fr auto;
-    align-items: center;
-    gap: 14px;
-
-    .stat-label {
-      font-family: var(--sans);
-      font-size: 13px;
-      color: var(--ink-mute);
-      font-weight: 400;
-    }
-    .stat-value {
-      font-family: var(--sans);
-      font-size: 22px;
-      font-weight: 600;
-      color: var(--ink);
-      letter-spacing: -0.01em;
-      font-feature-settings: "tnum", "lnum";
-    }
-  }
+.stat-card .stat-label {
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink-mute);
+  font-weight: 400;
 }
 
 /* ============ BAR CHART RACE ============ */
