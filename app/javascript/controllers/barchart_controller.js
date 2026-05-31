@@ -7,7 +7,7 @@ function token(name, fallback) {
 }
 
 export default class extends Controller {
-  static targets = ["svg"]
+  static targets = ["svg", "scrubber", "slider", "dateLabel"]
 
   static values = {
     importId: Number,
@@ -34,7 +34,18 @@ export default class extends Controller {
     }
   }
 
-  startRace(event) {
+  startRace() {
+    if (this.animationTimer) {
+      clearTimeout(this.animationTimer)
+      this.animationTimer = null
+    }
+
+    if (this.frames && this.frames.length && this.currentIndex < this.frames.length) {
+      this.playing = true
+      this.runAnimation()
+      return
+    }
+
     fetch(`/imports/${this.importIdValue}/summary/bar_chart_race?year=${this.selectedYearValue}&type=${this.raceTypeValue}`)
       .then(res => res.json())
       .then(data => this.initializeChart(data))
@@ -72,11 +83,13 @@ export default class extends Controller {
         .attr("stroke-width", 1)
     }
 
-    const x = d3.scaleLinear().range([0, chartWidth])
-    const y = d3.scaleBand().range([0, chartHeight]).padding(0.18)
-    const title = this.createTitle(svg, width)
+    this.x = d3.scaleLinear().range([0, chartWidth])
+    this.y = d3.scaleBand().range([0, chartHeight]).padding(0.18)
+    this.title = this.createTitle(svg, width)
+    this.svgD3 = svg
+    this.gD3 = g
 
-    const dateDisplay = g.append("text")
+    this.dateDisplay = g.append("text")
       .attr("class", "date-display")
       .attr("x", chartWidth - 10)
       .attr("y", chartHeight - 14)
@@ -88,8 +101,15 @@ export default class extends Controller {
 
     const dates = Object.keys(data).sort()
     const dataByDate = dates.map(date => data[date])
+    this.frames = this.buildFrames(dates, dataByDate)
 
-    this.runAnimation(svg, g, x, y, title, dateDisplay, dates, dataByDate)
+    this.sliderTarget.max = this.frames.length - 1
+    this.sliderTarget.value = 0
+    this.scrubberTarget.style.display = ""
+
+    this.currentIndex = 0
+    this.playing = true
+    this.runAnimation()
   }
 
   getChartDimensions() {
@@ -116,35 +136,52 @@ export default class extends Controller {
       .style("fill", token("--ink-mute", "#847C6B"))
   }
 
-  runAnimation(svg, g, x, y, title, dateDisplay, dates, dataByDate) {
+  buildFrames(dates, dataByDate) {
     const cumulativeData = {}
-    let dataIndex = 0
+    return dates.map((date, i) => {
+      const dayData = dataByDate[i]
+      for (const [name, count] of Object.entries(dayData)) {
+        if (!cumulativeData[name]) cumulativeData[name] = { count: 0 }
+        cumulativeData[name].count += (count || 0)
+      }
+      const top10 = Object.entries(cumulativeData)
+        .map(([name, info]) => [name, { count: info.count }])
+        .sort((a, b) => b[1].count - a[1].count)
+        .slice(0, 10)
+      return { date, top10 }
+    })
+  }
 
+  runAnimation() {
     const step = () => {
-      if (dataIndex >= dates.length) return
-      const top10 = this.getTop10Cumulative(dataByDate, cumulativeData, dataIndex)
-      this.updateChart(svg, g, x, y, title, dateDisplay, top10, dates[dataIndex])
-
-      dataIndex++
+      if (!this.playing || this.currentIndex >= this.frames.length) {
+        this.playing = false
+        return
+      }
+      this.renderFrame(this.currentIndex)
+      this.sliderTarget.value = this.currentIndex
+      this.currentIndex++
       this.animationTimer = setTimeout(step, 500)
     }
-
     step()
   }
 
-  getTop10Cumulative(dataByDate, cumulativeData, index) {
-    const dayData = dataByDate[index]
-    for (const [name, count] of Object.entries(dayData)) {
-      if (!cumulativeData[name]) {
-        cumulativeData[name] = { count: 0 }
-      }
-      cumulativeData[name].count += (count || 0)
+  scrub() {
+    this.playing = false
+    if (this.animationTimer) {
+      clearTimeout(this.animationTimer)
+      this.animationTimer = null
     }
+    const index = parseInt(this.sliderTarget.value)
+    this.currentIndex = index
+    this.renderFrame(index)
+  }
 
-    return Object.entries(cumulativeData)
-      .map(([name, info]) => [name, info])
-      .sort((a, b) => b[1].count - a[1].count)
-      .slice(0, 10)
+  renderFrame(index) {
+    const frame = this.frames[index]
+    this.updateChart(this.svgD3, this.gD3, this.x, this.y, this.title, this.dateDisplay, frame.top10, frame.date)
+    const dateObj = new Date(frame.date)
+    this.dateLabelTarget.textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
   }
 
   updateChart(svg, g, x, y, title, dateDisplay, top10, date) {
@@ -306,6 +343,7 @@ export default class extends Controller {
 
   updateRaceType(event) {
     this.raceTypeValue = event.target.value
+    this.frames = null
   }
 
   appendImage(imageGroup, imageUrl, yPos, name) {
