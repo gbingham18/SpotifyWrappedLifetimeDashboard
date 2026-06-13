@@ -12,7 +12,7 @@ servers:
 
 proxy:
   ssl: false
-  app_port: 3000
+  app_port: 80
 
 registry:
   username: gbingham18
