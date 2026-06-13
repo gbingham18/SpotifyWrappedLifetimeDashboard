@@ -20,4 +20,8 @@ test:
 
 production:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  database: spotify_wrapped_production
+  username: spotify_wrapped
+  password: <%= ENV["POSTGRES_PASSWORD"] %>
+  host: spotify_wrapped-db
+  port: 5432

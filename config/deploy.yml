@@ -22,7 +22,7 @@ registry:
 env:
   secret:
     - RAILS_MASTER_KEY
-    - DATABASE_URL
+    - POSTGRES_PASSWORD
     - REDIS_URL
     - SPOTIFY_CLIENT_ID
     - SPOTIFY_CLIENT_SECRET
