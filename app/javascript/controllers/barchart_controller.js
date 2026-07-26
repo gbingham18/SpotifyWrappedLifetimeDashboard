@@ -18,8 +18,8 @@ export default class extends Controller {
   connect() {
     // Slightly desaturated palette so bars feel cohesive against the warm dark UI
     this.barColors = [
-      '#E0723F', '#D6A24E', '#A8B468', '#6FA88F', '#7E89B0',
-      '#A47AB0', '#D77E9E', '#C2935A', '#E08A6F', '#5E8FA8'
+      '#66D46E', '#D6A24E', '#A8B468', '#6FA88F', '#7E89B0',
+      '#A47AB0', '#D77E9E', '#C2935A', '#8FD79A', '#5E8FA8'
     ]
     this.lookupColorByArtistName = new Map()
     this.usedColors = new Set()
@@ -334,7 +334,7 @@ export default class extends Controller {
             .attr("x", isTooWide ? barWidth + 5 : barWidth - 5)
             .attr("dy", j === 0 ? 0 : "1.1em")
             .attr("text-anchor", isTooWide ? "start" : "end")
-            .attr("fill", isTooWide ? token("--ink", "#F2EDDF") : "#1A0E07")
+            .attr("fill", isTooWide ? token("--ink", "#F2EDDF") : "#07190A")
         })
       })
 

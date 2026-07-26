@@ -42,7 +42,7 @@ export default class extends Controller {
     if (!this.hasEntityListTarget) return
 
     const lineSoft = token("--line-soft", "#1F1C17")
-    const accent = token("--accent", "#E0723F")
+    const accent = token("--accent", "#66D46E")
     const inkSoft = token("--ink-soft", "#C9C0AB")
 
     const listHtml = this.allEntities.map(entity => {
@@ -156,8 +156,8 @@ export default class extends Controller {
 
     // Warm palette for streamgraph layers — coordinated with bar race
     const warmPalette = [
-      '#E0723F', '#D6A24E', '#A8B468', '#6FA88F', '#7E89B0',
-      '#A47AB0', '#D77E9E', '#C2935A', '#E08A6F', '#5E8FA8',
+      '#66D46E', '#D6A24E', '#A8B468', '#6FA88F', '#7E89B0',
+      '#A47AB0', '#D77E9E', '#C2935A', '#8FD79A', '#5E8FA8',
       '#B8A07E', '#8E6F4A'
     ]
     const color = d3.scaleOrdinal()

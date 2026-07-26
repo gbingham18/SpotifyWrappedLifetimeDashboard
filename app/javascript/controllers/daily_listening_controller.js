@@ -44,7 +44,7 @@ export default class extends Controller {
 
     container.innerHTML = ""
 
-    const accent = token("--accent", "#E0723F")
+    const accent = token("--accent", "#66D46E")
     const inkMute = token("--ink-mute", "#847C6B")
     const line = token("--line", "#2A2620")
 

@@ -81,7 +81,7 @@ export default class extends Controller {
     const container = document.getElementById("tree-container")
     container.innerHTML = ""
 
-    const accent = token("--accent", "#E0723F")
+    const accent = token("--accent", "#66D46E")
     const ink = token("--ink", "#F2EDDF")
     const inkSoft = token("--ink-soft", "#C9C0AB")
     const line = token("--line", "#2A2620")
