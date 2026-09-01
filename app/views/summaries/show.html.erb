@@ -31,8 +31,7 @@
     <div id="overview" class="content-section active">
       <!-- Year Selection -->
       <div class="year-selector-top">
-        <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort %>
-        <% years.each do |year| %>
+        <% @import.available_years.sort.each do |year| %>
           <%= link_to year, import_summary_path(@import, year: year),
               class: "year-button #{'active' if year == @selected_year}" %>
         <% end %>

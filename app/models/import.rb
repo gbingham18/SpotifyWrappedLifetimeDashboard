@@ -26,29 +26,18 @@ class Import < ApplicationRecord
   before_save :set_metadata
   after_create_commit :enqueue_processing_job
 
+  # Newest first. Derived, not stored - one indexed DISTINCT per request,
+  # memoized for the request's lifetime.
   def available_years
-    populate_available_years if read_attribute(:available_years).blank?
-
-    years_string = read_attribute(:available_years)
-    return [] if years_string.blank?
-    years_string.split(",").map(&:to_i)
+    @available_years ||= imported_track_listens
+      .distinct
+      .pluck(Arel.sql("EXTRACT(YEAR FROM time_stamp)::int"))
+      .sort
+      .reverse
   end
 
   def most_recent_year
-    years = available_years
-    years.first
-  end
-
-  def populate_available_years
-    years = imported_track_listens
-      .distinct
-      .pluck(:time_stamp)
-      .map(&:year)
-      .uniq
-      .sort
-      .reverse
-
-    update(available_years: years.join(","))
+    available_years.first
   end
 
   private
