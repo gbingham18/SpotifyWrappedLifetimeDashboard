@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>REPLAY — Timeline Navigator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <div class="brandmark">Replay · Navigator</div>
+      <h1>Lifetime Dashboard</h1>
+      <p>Drag the timeline to filter by time. Hover a heavy-rotation artist to see their share of it. Click to isolate.</p>
+    </div>
+    <div class="lifetime">
+      <div><span class="k">Plays</span><span class="v" id="lifePlays">—</span></div>
+      <div><span class="k">Hours</span><span class="v" id="lifeHours">—</span></div>
+      <div><span class="k">Days</span><span class="v" id="lifeDays">—</span></div>
+    </div>
+  </div>
+
+  <div class="card navcard">
+    <div class="fbar">
+      <div class="fchip" id="timeChip"></div>
+      <div id="entChipSlot"></div>
+      <div class="searchwrap">
+        <input id="search" list="entities" placeholder="Search artist or track…" autocomplete="off" />
+        <datalist id="entities"></datalist>
+      </div>
+    </div>
+    <div class="navhead">
+      <span class="lbl" id="tlLabel">Master timeline · weekly minutes by artist</span>
+      <span class="peak" id="tlPeak"></span>
+    </div>
+    <svg id="timeline" viewBox="0 0 1100 118" preserveAspectRatio="none"></svg>
+    <div class="axis" id="axis"></div>
+    <div class="chips" id="chips"><span class="chipslbl">Heavy rotation</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="card panel">
+      <div class="panelhead">
+        <h2 id="panelTitle">—</h2>
+        <span class="zoomtag" id="zoomTag">—</span>
+      </div>
+      <div class="sub" id="panelSub"></div>
+      <div id="entHead"></div>
+      <div id="panelBody"></div>
+    </div>
+    <div class="tiles" id="tiles"></div>
+  </div>
+  <div class="hint"><span>Drag to select</span><span>Drag inside to pan</span><span>Double-click to reset</span><span>Click any name to isolate it</span></div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

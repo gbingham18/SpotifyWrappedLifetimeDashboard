@@ -307,162 +307,6 @@ ol, .summary-list, .top-tracks ol {
   font-weight: 400;
 }
 
-/* ============ BAR CHART RACE ============ */
-.barchart-selection {
-  display: flex;
-  justify-content: flex-start;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-.barchart-selection button,
-.barchart-selection select {
-  padding: 8px 16px;
-}
-
-.barchart-scrubber {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0 0;
-
-  input[type="range"] {
-    flex: 1;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-
-  .race-date {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--ink-mute);
-    min-width: 70px;
-    text-align: right;
-  }
-}
-
-#barChart text { fill: var(--ink); font-family: var(--sans); }
-
-/* ============ INSIGHTS — hourly + daily ============ */
-.insights-charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--gap);
-}
-@media (max-width: 900px) {
-  .insights-charts-row { grid-template-columns: 1fr; }
-}
-
-/* Timezone select (bootstrap form-select override) */
-.form-select.form-select-sm,
-.form-control.form-control-sm {
-  background: var(--bg-2);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  border-radius: 100px;
-  padding: 7px 28px 7px 14px;
-  font-family: var(--sans);
-  font-size: 13px;
-  width: auto;
-
-  &:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent-soft);
-    outline: none;
-    background-color: var(--bg-2);
-    color: var(--ink);
-  }
-}
-.form-label { font-size: 13px; color: var(--ink-mute); margin: 0; }
-
-/* ============ STREAMGRAPH ============ */
-#streamGraph { background: transparent; border-radius: 6px; }
-.entity-item {
-  background: var(--card-hover) !important;
-  border-bottom: 1px solid var(--line-soft) !important;
-  border-radius: 4px;
-  margin-bottom: 4px;
-  padding: 8px 10px !important;
-  font-family: var(--sans);
-  font-size: 12px;
-  color: var(--ink) !important;
-}
-.entity-item:hover { background: var(--line) !important; }
-
-/* ============ HEATMAP ============ */
-.heatmap-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 22px !important;
-  justify-content: flex-start !important;
-  flex-wrap: wrap;
-}
-
-.heatmap-month-row {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 6px;
-}
-.heatmap-month-label {
-  width: 14px;
-  height: 14px;
-  font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  color: var(--ink-mute);
-  text-align: left;
-}
-.heatmap-row {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 2px;
-}
-.heatmap-day-label {
-  width: 32px;
-  height: 14px;
-  font-family: var(--mono);
-  font-size: 9px;
-  line-height: 14px;
-  text-align: right;
-  padding-right: 8px;
-  color: var(--ink-mute);
-}
-.heatmap-cell {
-  width: 14px;
-  height: 14px;
-  border-radius: 2px;
-  background: var(--line-soft);
-  cursor: pointer;
-  transition: outline 80ms;
-}
-.heatmap-cell:hover { outline: 1px solid var(--accent); outline-offset: 1px; }
-.heatmap-cell.empty-cell { opacity: 0.3; background: transparent; }
-
-.level-0 { background: var(--line-soft); }
-.level-1 { background: color-mix(in oklab, var(--accent) 30%, var(--line-soft)); }
-.level-2 { background: color-mix(in oklab, var(--accent) 55%, var(--line-soft)); }
-.level-3 { background: color-mix(in oklab, var(--accent) 80%, var(--line-soft)); }
-.level-4 { background: var(--accent); }
-
-/* Autocomplete (heatmap search) */
-.autocomplete-item {
-  background: var(--card) !important;
-  color: var(--ink) !important;
-  border: 1px solid var(--line) !important;
-  border-radius: 4px !important;
-  padding: 8px 12px !important;
-  font-family: var(--sans) !important;
-  font-size: 13px !important;
-  width: 250px !important;
-  &:hover { background: var(--card-hover) !important; }
-}
-
-/* ============ TREE ============ */
-#tree-container { background: transparent; border-radius: 6px; }
-
 /* ============ UPLOAD ============ */
 #upload-tile {
   margin: 0 auto !important;
@@ -496,7 +340,7 @@ ol, .summary-list, .top-tracks ol {
   align-items: center;
   margin-bottom: 18px;
   padding: 48px 32px;
-  border: 1px dashed var(--line);
+  border: 1px dashed var(--accent);
   background: var(--bg-2);
   border-radius: 8px;
   text-align: center;
@@ -614,3 +458,5 @@ ol, .summary-list, .top-tracks ol {
   .tile-row { grid-template-columns: 1fr; }
   .summary-section { grid-template-columns: 1fr; }
 }
+
+@import "replay";

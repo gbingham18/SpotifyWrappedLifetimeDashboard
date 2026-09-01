@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_05_060126) do
+ActiveRecord::Schema[8.0].define(version: 2026_08_31_045555) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,16 +42,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_05_060126) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "bar_chart_race_data", force: :cascade do |t|
-    t.integer "import_id", null: false
-    t.integer "year"
-    t.string "race_type"
-    t.json "data", default: {}, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["import_id"], name: "index_bar_chart_race_data_on_import_id"
-  end
-
   create_table "imported_track_listens", force: :cascade do |t|
     t.string "track_name"
     t.string "artist_name"
@@ -62,6 +52,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_05_060126) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "import_id", null: false
+    t.index ["import_id", "artist_name"], name: "index_imported_track_listens_on_import_id_and_artist_name"
+    t.index ["import_id", "time_stamp"], name: "index_imported_track_listens_on_import_id_and_time_stamp"
+    t.index ["import_id", "track_name"], name: "index_imported_track_listens_on_import_id_and_track_name"
     t.index ["import_id"], name: "index_imported_track_listens_on_import_id"
   end
 
@@ -237,7 +230,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_05_060126) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
-  add_foreign_key "bar_chart_race_data", "imports"
   add_foreign_key "imported_track_listens", "imports"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

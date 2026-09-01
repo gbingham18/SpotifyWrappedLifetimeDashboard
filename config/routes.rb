@@ -10,17 +10,17 @@ Rails.application.routes.draw do
       get :status
     end
 
-    resource :summary, only: [ :show ] do
-      get :bar_chart_race
-      get :heatmap_data
-      get :tree_data
-      get :hourly_listening_data
-      get :daily_listening_data
-      get :stream_graph_data
-    end
+    resource :summary, only: [ :show ]
 
     resource :search, only: [] do
       get :entity_names
+    end
+
+    resource :replay, only: [] do
+      get :bootstrap
+      get :entity_series
+      get :range_summary
+      get :day
     end
   end
 

@@ -1,9 +1,5 @@
 <% content_for :title, "Listening Summary" %>
 
-<% content_for :head do %>
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-<% end %>
-
 <script>
   document.addEventListener("turbo:load", function () {
     const menuItems = document.querySelectorAll(".menu-item");
@@ -27,22 +23,20 @@
   <aside class="sidebar">
     <h2>Summary</h2>
     <div class="menu-item active" data-target="overview">Overview</div>
-    <div class="menu-item" data-target="insights">Insights</div>
-    <div class="menu-item" data-target="fullvisibility">Full Visibility</div>
+    <div class="menu-item" data-target="timeline">Timeline</div>
   </aside>
 
   <div class="content-area">
-    <!-- Year Selection -->
-    <div class="year-selector-top">
-      <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort %>
-      <% years.each do |year| %>
-        <%= link_to year, import_summary_path(@import, year: year),
-            class: "year-button #{'active' if year == @selected_year}" %>
-      <% end %>
-    </div>
-
     <!-- Overview Section -->
     <div id="overview" class="content-section active">
+      <!-- Year Selection -->
+      <div class="year-selector-top">
+        <% years = @import.imported_track_listens.pluck(:time_stamp).map(&:year).uniq.sort %>
+        <% years.each do |year| %>
+          <%= link_to year, import_summary_path(@import, year: year),
+              class: "year-button #{'active' if year == @selected_year}" %>
+        <% end %>
+      </div>
       <div class="stats-row">
         <div class="tile stat-card">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,3 20,12 6,21"/></svg>
@@ -106,138 +100,56 @@
         </div>
       </div>
 
-      <div class="tile tile-full">
-        <h3>Bar Chart Race</h3>
-        <div data-controller="barchart"
-             data-barchart-import-id-value="<%= @import.id %>"
-             data-barchart-selected-year-value="<%= @selected_year %>"
-             data-barchart-race-type-value="Artists">
-          <div class="barchart-selection">
-            <button data-action="click->barchart#startRace">Start Race</button>
-            <select data-action="change->barchart#updateRaceType" name="race_type">
-              <option value="Artists">Artists</option>
-              <option value="Tracks">Tracks</option>
-            </select>
-          </div>
-
-          <svg data-barchart-target="svg" id="barChart" viewBox="0 0 650 600" preserveAspectRatio="xMidYMid meet" style="width: 100%; height: 95%; display: none;"></svg>
-
-          <div class="barchart-scrubber" data-barchart-target="scrubber" style="display:none;">
-            <input type="range" min="0" max="1" step="1" value="0"
-                   data-barchart-target="slider"
-                   data-action="input->barchart#scrub">
-            <span class="race-date" data-barchart-target="dateLabel"></span>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Insights Section -->
-    <div id="insights" class="content-section">
-      <div class="tile">
-        <h3>Listening Behavior</h3>
-
-        <div style="margin-bottom: 22px; display: flex; align-items: center; gap: 10px;">
-          <label for="timezone-select" class="form-label">Timezone</label>
-          <select id="timezone-select"
-                  data-action="change->hourly-listening#changeTimezone change->daily-listening#changeTimezone"
-                  class="form-select form-select-sm w-auto">
-            <option value="America/Los_Angeles">Pacific Time (PST/PDT)</option>
-            <option value="America/Denver">Mountain Time (MST/MDT)</option>
-            <option value="America/Chicago">Central Time (CST/CDT)</option>
-            <option value="America/New_York">Eastern Time (EST/EDT)</option>
-            <option value="America/Phoenix">Arizona (MST)</option>
-            <option value="America/Anchorage">Alaska (AKST/AKDT)</option>
-            <option value="Pacific/Honolulu">Hawaii (HST)</option>
-            <option value="UTC">UTC</option>
-            <option value="Europe/London">London (GMT/BST)</option>
-            <option value="Europe/Paris">Paris (CET/CEST)</option>
-            <option value="Europe/Berlin">Berlin (CET/CEST)</option>
-            <option value="Asia/Tokyo">Tokyo (JST)</option>
-            <option value="Asia/Shanghai">Shanghai (CST)</option>
-            <option value="Asia/Dubai">Dubai (GST)</option>
-            <option value="Australia/Sydney">Sydney (AEDT/AEST)</option>
-          </select>
-        </div>
-
-        <div class="insights-charts-row">
-          <div data-controller="hourly-listening"
-               data-hourly-listening-import-id-value="<%= @import.id %>"
-               data-hourly-listening-selected-year-value="<%= @selected_year %>">
-            <div id="hourly-chart"></div>
-          </div>
-
-          <div data-controller="daily-listening"
-               data-daily-listening-import-id-value="<%= @import.id %>"
-               data-daily-listening-selected-year-value="<%= @selected_year %>">
-            <div id="daily-chart"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="tile">
-        <h3>Listening Distribution</h3>
-        <div data-controller="streamgraph"
-             data-streamgraph-import-id-value="<%= @import.id %>"
-             data-streamgraph-selected-year-value="<%= @selected_year %>"
-             data-streamgraph-race-type-value="Artists">
-
-          <div style="margin-bottom: 22px; display: flex; align-items: center; gap: 10px;">
-            <label for="streamgraph-type-select" class="form-label">Type</label>
-            <select id="streamgraph-type-select"
-                    data-streamgraph-target="typeSelect"
-                    data-action="change->streamgraph#changeType"
-                    class="form-select form-select-sm w-auto">
-              <option value="Artists">Artists</option>
-              <option value="Tracks">Tracks</option>
-            </select>
-          </div>
-
-          <div style="display: flex; gap: 22px; flex-wrap: wrap;">
-            <svg data-streamgraph-target="svg" id="streamGraph" width="900" height="500" style="flex: 1; min-width: 0;"></svg>
-
-            <div style="width: 260px; background: var(--bg-2); border: 1px solid var(--line-soft); border-radius: 8px; padding: 16px; max-height: 500px; overflow-y: auto;">
-              <h4 style="margin: 0 0 14px; font-family: var(--sans); font-size: 12px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-mute);">Add / Remove</h4>
-              <div data-streamgraph-target="entityList"></div>
+    <!-- Timeline Navigator Section -->
+    <div id="timeline" class="content-section">
+      <div class="replay" data-controller="replay" data-replay-import-id-value="<%= @import.id %>">
+        <div class="wrap">
+          <div class="top">
+            <div>
+              <div class="brandmark">Replay · Navigator</div>
+              <h1>Lifetime Dashboard</h1>
+              <p>Drag the timeline to filter by time. Hover a heavy-rotation artist to see their share of it. Click to isolate.</p>
+            </div>
+            <div class="lifetime">
+              <div><span class="k">Plays</span><span class="v" data-replay-target="lifePlays">—</span></div>
+              <div><span class="k">Hours</span><span class="v" data-replay-target="lifeHours">—</span></div>
+              <div><span class="k">Days</span><span class="v" data-replay-target="lifeDays">—</span></div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- Full Visibility Section -->
-    <div id="fullvisibility" class="content-section">
-      <div class="tile">
-        <h3>Listening Intensity Heatmap</h3>
-        <div data-controller="heatmap"
-            data-heatmap-import-id-value="<%= @import.id %>"
-            data-heatmap-initial-year-value="<%= @selected_year %>">
-
-          <div class="heatmap-controls">
-            <label class="form-label">Type</label>
-            <select id="entityType" class="form-select form-select-sm w-auto">
-              <option value="Artists">Artist</option>
-              <option value="Tracks">Track</option>
-            </select>
-
-            <label for="entitySearch" class="form-label">Search</label>
-            <input type="text"
-                  id="entitySearch"
-                  class="form-control form-control-sm"
-                  placeholder="Type artist or track name…"
-                  style="width: 260px;">
+          <div class="card navcard">
+            <div class="fbar" data-replay-target="fbar">
+              <div class="fchip" data-replay-target="timeChip"></div>
+              <div data-replay-target="entChipSlot"></div>
+              <div class="searchwrap">
+                <input data-replay-target="search" list="replay-entities" placeholder="Search artist or track…" autocomplete="off" />
+                <datalist id="replay-entities" data-replay-target="entities"></datalist>
+              </div>
+            </div>
+            <div class="navhead">
+              <span class="lbl" data-replay-target="tlLabel">Master timeline · weekly minutes</span>
+              <span class="peak" data-replay-target="tlPeak"></span>
+            </div>
+            <svg data-replay-target="timeline" viewBox="0 0 1100 118" preserveAspectRatio="none"></svg>
+            <div class="axis" data-replay-target="axis"></div>
+            <div class="chips" data-replay-target="chips"><span class="chipslbl">Heavy rotation</span></div>
           </div>
 
-          <div id="heatmap-grid" style="margin-top: 18px; overflow-x: auto;"></div>
-        </div>
-      </div>
-
-      <div class="tile">
-        <h3>Listening Tree</h3>
-        <div data-controller="tree"
-             data-tree-import-id-value="<%= @import.id %>"
-             data-tree-selected-year-value="<%= @selected_year %>">
-          <div id="tree-container" style="width: 100%; min-width: 800px; height: 320px; margin-bottom: 8px; overflow: auto;"></div>
+          <div class="grid">
+            <div class="card panel">
+              <div class="panelhead">
+                <h2 data-replay-target="panelTitle">—</h2>
+                <span class="zoomtag" data-replay-target="zoomTag">—</span>
+              </div>
+              <div class="sub" data-replay-target="panelSub"></div>
+              <div data-replay-target="entHead"></div>
+              <div data-replay-target="panelBody"></div>
+            </div>
+            <div class="tiles" data-replay-target="tiles"></div>
+          </div>
+          <div class="hint"><span>Drag to select</span><span>Drag inside to pan</span><span>Double-click to reset</span><span>Click any name to isolate it</span></div>
         </div>
       </div>
     </div>

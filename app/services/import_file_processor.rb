@@ -6,15 +6,6 @@ class ImportFileProcessor
     @uploaded_zip_file = uploaded_zip_file
     @import_id = import_id
     @import = Import.find(@import_id)
-
-    # 3-level nested hash: year → date → artist/track → count
-    @artist_data_by_year = Hash.new do |h, year|
-      h[year] = Hash.new { |h2, date| h2[date] = Hash.new(0) }
-    end
-
-    @track_data_by_year = Hash.new do |h, year|
-      h[year] = Hash.new { |h2, date| h2[date] = Hash.new(0) }
-    end
   end
 
   def process
@@ -30,9 +21,6 @@ class ImportFileProcessor
         process_json_entry(entry, index, json_entries.size)
       end
     end
-
-    # Final write: after ALL entries processed
-    save_bar_chart_data
 
     @import.populate_available_years
     update_progress(100)
@@ -51,8 +39,6 @@ class ImportFileProcessor
 
     json_data.each_with_index do |data, index|
       timestamp = DateTime.parse(data["ts"])
-      year      = timestamp.year
-      date_str  = timestamp.to_date.to_s
 
       track_name  = data["master_metadata_track_name"]
       artist_name = data["master_metadata_album_artist_name"]
@@ -64,9 +50,6 @@ class ImportFileProcessor
 
       # Only insert tracks with enough play time
       if data["ms_played"].to_i >= 30000
-        # Aggregate per year → date → artist
-        @artist_data_by_year[year][date_str][artist_name] += 1
-        @track_data_by_year[year][date_str][track_name]   += 1
         records_to_insert << {
           track_name: track_name,
           artist_name: artist_name,
@@ -99,27 +82,6 @@ class ImportFileProcessor
     Rails.logger.error("Error parsing JSON: #{e.message}")
   rescue ActiveRecord::RecordInvalid => e
     Rails.logger.error("Error saving model records: #{e.message}")
-  end
-
-  def save_bar_chart_data
-    # One record per year per race type
-    @artist_data_by_year.each do |year, date_hash|
-      BarChartRaceDatum.create!(
-        import: @import,
-        year: year,
-        race_type: "Artists",
-        data: date_hash
-      )
-    end
-
-    @track_data_by_year.each do |year, date_hash|
-      BarChartRaceDatum.create!(
-        import: @import,
-        year: year,
-        race_type: "Tracks",
-        data: date_hash
-      )
-    end
   end
 
   def calculate_progress(json_index, total_json_files, entry_index, total_entries)
