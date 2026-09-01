@@ -3,9 +3,7 @@ Rails.application.routes.draw do
 
   root to: "imports#index"
 
-  post "imports/import", to: "imports#import", as: :import_import
-
-  resources :imports do
+  resources :imports, only: [ :index, :create ] do
     member do
       get :status
     end

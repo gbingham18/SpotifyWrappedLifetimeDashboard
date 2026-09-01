@@ -23,19 +23,8 @@ class Import < ApplicationRecord
     self.progress ||= 0
   end
 
-  after_save_commit :enqueue_processing_job, if: :saved_change_to_id?
-
-  def enqueue_processing_job
-    ImportProcessorJob.perform_later(id)
-  end
-
-  def set_metadata
-    return unless file.attached?
-
-    self.file_size = file.blob.byte_size
-    self.file_name = file.filename.to_s
-    self.file_format = file.content_type
-  end
+  before_save :set_metadata
+  after_create_commit :enqueue_processing_job
 
   def available_years
     populate_available_years if read_attribute(:available_years).blank?
@@ -63,6 +52,18 @@ class Import < ApplicationRecord
   end
 
   private
+
+  def set_metadata
+    return unless file.attached?
+
+    self.file_size = file.blob.byte_size
+    self.file_name = file.filename.to_s
+    self.file_format = file.content_type
+  end
+
+  def enqueue_processing_job
+    ImportProcessorJob.perform_later(id)
+  end
 
   def validate_zip_file
     if file.attached? && file.content_type != "application/zip"
