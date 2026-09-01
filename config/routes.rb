@@ -21,8 +21,4 @@ Rails.application.routes.draw do
       get :day
     end
   end
-
-  # ✅ Spotify image endpoints for lazy loading
-  get "spotify/artist_image", to: "spotify#artist_image"
-  get "spotify/track_image", to: "spotify#track_image"
 end
