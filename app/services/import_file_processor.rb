@@ -17,7 +17,7 @@ class ImportFileProcessor
       end
 
       json_entries.each_with_index do |entry, index|
-        puts "Processing: #{entry.name}"
+        Rails.logger.info("ImportFileProcessor: processing #{entry.name}")
         process_json_entry(entry, index, json_entries.size)
       end
     end

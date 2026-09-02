@@ -47,7 +47,6 @@ module SpotifyApi
 
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.use_ssl = true
-      http.verify_mode = OpenSSL::SSL::VERIFY_NONE if Rails.env.development?
 
       response = http.start do |http|
         http.request(request)
@@ -55,7 +54,9 @@ module SpotifyApi
 
       parsed = JSON.parse(response.body)
 
-      raise "Spotify API Error: #{parsed['error']&.dig('message') || 'Unknown error'}, request_path: #{path}" if response.code.to_i >= 400
+      if response.code.to_i >= 400
+        raise Error, "Spotify API #{response.code}: #{parsed.dig('error', 'message') || 'unknown error'} (#{path})"
+      end
 
       parsed
     end
