@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_08_31_045555) do
+ActiveRecord::Schema[8.0].define(version: 2026_09_01_052401) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -65,7 +65,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_08_31_045555) do
     t.string "file_name"
     t.string "file_format"
     t.integer "progress"
-    t.string "available_years"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|

@@ -169,7 +169,7 @@ class ReplaysController < ApplicationController
                SUM(time_played) AS ms,
                COUNT(*) AS plays,
                RANK() OVER (
-                 PARTITION BY EXTRACT(YEAR FROM time_stamp)
+                 PARTITION BY EXTRACT(YEAR FROM time_stamp)::int
                  ORDER BY SUM(time_played) DESC
                ) AS rank
         FROM imported_track_listens
